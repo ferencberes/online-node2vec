@@ -12,6 +12,8 @@ You can also download all related data sets with the following command
 bash ./scripts/download_data.sh
 ```
 
+If you use these Twitter datasets then please cite our previous [work](https://link.springer.com/article/10.1007/s41109-018-0080-5).
+
 # Usage
 
 The source code for our experiments will be uploaded soon.
