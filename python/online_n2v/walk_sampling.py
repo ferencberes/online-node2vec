@@ -1,6 +1,7 @@
-import multiprocessing, functools
+import random
 import pandas as pd
 import numpy as np
+from .hash_utils import ModHashGenerator
 
 def update_walk_instance_weight(decay, instance):
         src, length, weight = instance
@@ -15,7 +16,8 @@ def get_num_samples(x, k=3, K=50, c=0.5):
     return int(np.floor(a / (b + np.exp(-c * x))))
 
 class TemporalWalkUpdater():
-    def __init__(self, half_life=7200, window_size=3, k=4, K=50, gamma=0.5, max_num_walks_per_node=1000, p=0.9, n_threads=1):
+    """Temporal Walk Algorithm"""
+    def __init__(self, half_life=7200, window_size=3, k=4, K=50, gamma=0.5, max_num_walks_per_node=1000, p=0.9):
         #parameters
         self.half_life = half_life
         self.c = - np.log(0.5) / half_life
@@ -25,7 +27,6 @@ class TemporalWalkUpdater():
         self.k = k
         self.K = K
         self.gamma = gamma
-        self.n_threads = n_threads
         #variables
         self.trg_index = {}
         self.src_index = {}
@@ -43,7 +44,6 @@ class TemporalWalkUpdater():
             sample_df = pd.DataFrame(self.trg_index[trg], columns=["src","length","weight"])
             sum_weights = sample_df["weight"].sum()
             num_samples = get_num_samples(sum_weights, k=self.k, K=self.K, c=self.c)
-            sample_df["weight"] /= self.sum_weights
             chosen_df = sample_df.sample(n=num_samples, replace=True, weights="weight")
             chosen_df["trg"] = trg
             sampled_pairs += list(zip(chosen_df["src"],chosen_df["trg"]))
@@ -98,156 +98,119 @@ class TemporalWalkUpdater():
         """Execute lazy time decay update for the stored walk weights"""
         last_update = self.trg_last_updated.get(trg_node, now)
         decay = np.exp(-self.c * (now-last_update))
-        if self.n_threads > 1 and len(walks) > self.n_threads:
-            f_partial = functools.partial(update_walk_instance_weight, decay)
-            pool = multiprocessing.Pool(processes=self.n_threads)
-            updated_walks = pool.map(f_partial, walks)
-            pool.close()
-            pool.join()
-        else:
-            updated_walks = [update_walk_instance_weight(decay, w) for w in walks]
+        updated_walks = [update_walk_instance_weight(decay, w) for w in walks]
         self.trg_last_updated[trg_node] = now
         return updated_walks
 
-import sqlite3
-class TemporalWalkUpdaterSQLite():
-    def __init__(self, half_life=7200, window_size=3, k=4, K=50, gamma=0.5, max_num_walks_per_node=1000, p=0.9):
-        #parameters
-        self.half_life = half_life
+    
+class TemporalRandomWalkUpdater():
+    """Temporal (Random) Walk Algorithm"""
+    def __init__(self, half_life=7200,  max_len = 3, sample_num=4, beta=0.2, cutoff = 604800, full_walks = False):
         self.c = - np.log(0.5) / half_life
-        self.window_size = window_size
-        self.max_num_walks_per_node = max_num_walks_per_node
-        self.p = p
-        self.k = k
-        self.K = K
-        self.gamma = gamma
-        #variables
-        self.num_stored_walks = 0
+        self.beta = beta
+        self.half_life = half_life
+        self.sample_num = sample_num
+        self.cutoff  = cutoff
+        self.max_len = max_len
+        self.full_walks = full_walks
+        self.G = {}
+        self.times = {}
+        self.cent = {}
+        self.cent_now = {}
+        self.lens = {}
+        for j in range(max_len):
+            self.lens[j+1] = 0
         self.extended_chosen_list = []
         
-        self.sqlite = sqlite3.connect(':memory:')
-        self.sqlite.execute("DROP TABLE IF EXISTS walks;")
-        self.sqlite.execute("""CREATE TABLE walks (
-            src VARCHAR(32) NOT NULL,
-            trg VARCHAR(32) NOT NULL,
-            length INTEGER NOT NULL,
-            weight DOUBLE NOT NULL,
-            time INTEGER NOT NuLL
-        )""")
-        self.sqlite.execute("CREATE INDEX walk_trgs_index ON walks (trg);")
-        # update weight: multiplying by decay
-        self.sqlite.create_function("node_weight", 3, lambda now, last_update, weights: weights * np.exp(- self.c * (now - last_update)))
-        self.sqlite.create_function("update_time", 1, lambda now: now)
-        self.sqlite.create_function("sampled_node_weight", 2, lambda now, etime: np.random.rand() ** (1 / np.exp(- c * (now - etime))))
-        # Domi magic?
-        self.sqlite.create_function("sampled_weight_score", 1, lambda w: np.random.rand() ** (1 / w))
-        
     def __str__(self):
-        return "sqltempwalk_hl%i_win%i_k%i_K%i_gamma%0.2f_mnw%i_p%0.2f" % (self.half_life, self.window_size, self.k, self.K, self.gamma, self.max_num_walks_per_node, self.p)
-    
-    def sample_node_pairs(self, src, trg, time):
-        """Sample walk starting nodes based on weights"""
-        srcs = [src]
-        if self.k > 0:
-            walks = list(zip(*list(self.sqlite.execute("""
-                SELECT src, weight FROM walks
-                WHERE trg = "%s"
-            """ % trg))))
-            weights_nonorm = np.array(walks[1])
-            weights_sum = np.sum(weights_nonorm)
-            weights = weights_nonorm / weights_sum
-            num_samples = get_num_samples(weights_sum, k=self.k, K=self.K, c=self.c)
-            srcs = list(np.random.choice(walks[0], num_samples, replace=True, p=weights))
-            # include extended information
-            chosen_pairs = []
-            for x in srcs:
-                chosen_pairs.append({
-                    'sample_x' : x,
-                    'sample_y' : trg,
-                    'method' : 'tempWalk',
-                    'edge_t' : time,
-                    'edge_src' : src,
-                    'edge_trg' : trg,  
-                })
-            self.extended_chosen_list += chosen_pairs
-        return list(zip(srcs, np.repeat(trg, len(srcs))))
-    
-    def process_new_edge(self, src, trg, time):
-        # walks ending in target to temporary table
-        self.sqlite.execute("DROP TABLE IF EXISTS trg_walks;")
-        self.sqlite.execute("""
-            CREATE TEMPORARY TABLE trg_walks AS
-            SELECT * FROM walks WHERE walks.trg = "%s";
-        """ % trg)
-        
-        # insert current edge
-        self.sqlite.execute(
-            "INSERT INTO trg_walks (src, trg, length, weight, time) values (?,?,?,?,?)",
-            (src, trg, 1, 1.0, int(time))
-        )
-    
-        # insert walks ending in source
-        self.sqlite.execute("""
-            INSERT INTO trg_walks
-            SELECT src, "%s", length+1 as nlen, weight, time FROM walks WHERE
-                walks.trg = "%s" and
-                src != "%s" and
-                nlen <= %i;
-        """ % (trg, src, trg, self.window_size))
-        
-        self.sqlite.execute("UPDATE trg_walks SET weight = node_weight(%i, trg_walks.time, trg_walks.weight)" % time)
-        self.sqlite.execute("UPDATE trg_walks SET time = update_time(%i)" % time)
-        
-        # groupby
-        self.sqlite.execute("DROP TABLE IF EXISTS trg_walks_2;")
-        self.sqlite.execute("""
-            CREATE TEMPORARY TABLE trg_walks_2 AS
-            SELECT src, trg, length, SUM(weight) as weight, time
-            FROM trg_walks
-            GROUP BY src;
-        """)
-        
-        # delete original walks
-        self.sqlite.execute("""DELETE FROM walks WHERE trg = "%s" """ % trg)
+        return "temprandwalk_hl%i_ml%i_beta%.2f_sn%i_cutoff%i_fullw%s" % (self.half_life, self.max_len, self.beta, self.sample_num, self.cutoff, self.full_walks)
 
-        # load new walks back into table
-        target_walks_num = self.sqlite.execute("SELECT count(*) from trg_walks_2;").fetchone()[0]
-        #print(5, target_walks_num)
-        if target_walks_num > self.max_num_walks_per_node:
-            # sample without replacement according to weights
-            # https://stackoverflow.com/a/18282419/336403
-            self.sqlite.execute("""
-                INSERT INTO walks
-                SELECT * FROM trg_walks_2
-                ORDER BY sampled_weight_score(trg_walks_2.weight) DESC
-                LIMIT %f
-            """ % self.p*self.max_num_walks_per_node)
+    def sample_node_pairs (self, src, trg, time):
+        pairs = []
+        if src not in self.G:
+            # src is not reachable from any node within cutoff
+            return [(src,trg)]*self.sample_num
+        for i in range(self.sample_num):
+            node_ , time_, cent_ = src, self.times[src], self.cent[src]
+            walk = []
+            while True:
+                walk.append(node_)
+                if random.uniform(0,1) < 1/(cent_ * self.beta + 1) or (node_ not in self.G) or len(walk)>=self.max_len:  break
+                sum_ = cent_ * random.uniform(0,1); sum__ = 0
+                for (n,t,c) in reversed(self.G[node_]):
+                    if t < time_:
+                        sum__ += (c * self.beta + 1)* np.exp( self.c * (t - time_) )
+                        if sum__ >= sum_: break
+                node_,time_,cent_ = n,t,c
+            self.lens[len(walk)]+=1
+            if(self.full_walks):
+                pairs.append([trg]+walk)
+            else:
+                pairs.append((node_,trg))
+                self.extended_chosen_list.append({
+                'sample_x' : node_,
+                'sample_y' : trg,
+                'method' : 'tempRandWalk',
+                'edge_t' : time,
+                'edge_src' : src,
+                'edge_trg' : trg,  
+            })
+        return pairs
+
+    def process_new_edge(self, src, trg, time):
+        # apply time decay for trg
+        if trg in self.cent:
+            self.cent[trg] = self.cent[trg]*np.exp(self.c*(self.times[trg]-time))
         else:
-            self.sqlite.execute("""
-                INSERT INTO walks
-                SELECT * FROM trg_walks_2
-            """)
-        self.num_stored_walks = self.sqlite.execute("SELECT count(*) from walks;").fetchone()[0]
+            self.cent[trg] = 0
+        src_cent =  0
+        if src in self.times:
+            src_cent = self.cent[src]
+            if self.times[src] < time:
+                # apply time decay for src
+                src_cent = src_cent * np.exp(self.c*(self.times[src]-time))
+            else:
+                # if src is currently active then adjust centrality
+                src_cent = src_cent - self.cent_now[src]
+        self.cent[trg] += src_cent * self.beta + 1
+        if (trg not in self.times) or (self.times[trg] < time):
+            # cent_now is initialized for each node in each second
+            self.cent_now[trg] = 0
+        self.cent_now[trg] += src_cent * self.beta + 1
+        if trg not in self.G:
+            self.G[trg] = []
+        # collect recent edges for each vertex
+        self.G[trg].append((src,time,src_cent))
+        ii = 0
+        for (s,t,c) in self.G[trg]:
+            if time - t < self.cutoff: break
+            ii+=1
+        # drop old inedges
+        self.G[trg] = self.G[trg][ii:]
+        # update node activation time
+        self.times[trg] = time
+        # generate node pairs for training
         return self.sample_node_pairs(src, trg, time)
+
     
 class OnlineSecondOrderSim():
-    def __init__(self, hash_functions, half_life=7200, real_direction=False, n_threads=1):
+    """Temporal Neighborhood Algorithm"""
+    def __init__(self, half_life=7200, num_hash=20, hash_generator=ModHashGenerator(), real_direction=False):
         # parameters
-        self.hash_functions = hash_functions
         self.half_life = half_life
+        self.num_hash = num_hash
+        self.hash_gen = hash_generator
         self.real_direction = real_direction
-        self.c = - np.log(0.5) / half_life
-        self.n_threads = n_threads
         # variables
-        self.k = len(hash_functions)
+        self.c = - np.log(0.5) / half_life
+        self.hash_functions = self.hash_gen.generate(self.num_hash)
         self.fingerprint_data = {}
         self.out_edgelist_graph = {}
         # self.in_edgelist_graph = {}
         self.extended_chosen_list = []
-        self.num_stored_walks = None # this parameter is needed due to information logging
 
     def __str__(self):
-        return "secondorder_hl%i_numh%i_rdir%s" % (self.half_life, self.k, self.real_direction)
+        return "secondorder_hl%i_numh%i_%s_rdir%s" % (self.half_life, self.num_hash, str(self.hash_gen), self.real_direction)
 
     def process_new_edge(self, src, trg, now):
         return self.update_second_order(src, trg, now, self.out_edgelist_graph)
@@ -263,7 +226,7 @@ class OnlineSecondOrderSim():
             if x != v:
                 self.heuristic_update(x, u, v, now)
                 # sample node pairs for word2vec
-                for i in range(self.k):
+                for i in range(self.num_hash):
                     fp_v = self.fingerprint_data[v][i][1]
                     fp_x = self.fingerprint_data[x][i][1]
                     if fp_v == fp_x and (fp_v is not None):
@@ -292,7 +255,7 @@ class OnlineSecondOrderSim():
             ]
         else:
             new_fp = u if x == v else None
-            updated_fingerprint_items = [(i, new_fp, now) for i in range(self.k)]
+            updated_fingerprint_items = [(i, new_fp, now) for i in range(self.num_hash)]
 
         self.fingerprint_data[x] = updated_fingerprint_items
 

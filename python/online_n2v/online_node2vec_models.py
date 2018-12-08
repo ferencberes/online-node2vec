@@ -59,10 +59,13 @@ class Node2VecBase():
                     self.updater.extended_chosen_list = []
         else:
             print("'output_dir' was not specified. Embedding was not exported!")
-        print(snapshot_idx, elapsed_seconds, self.sum_train_time, self.updater.num_stored_walks)
+        if "TemporalWalk" in str(type(self.updater)):
+            print(snapshot_idx, elapsed_seconds, self.sum_train_time, self.updater.num_stored_walks)
+        else:
+            print(snapshot_idx, elapsed_seconds, self.sum_train_time)
         
 class LazyNode2Vec(Node2VecBase):
-    def __init__(self, updater, learner, is_decayed=False, logging=False):
+    def __init__(self, updater, learner, is_decayed=True, logging=False):
         super(LazyNode2Vec, self).__init__(updater, learner, is_decayed, logging)
         
     def __str__(self):
@@ -110,7 +113,7 @@ class LazyNode2Vec(Node2VecBase):
         print("Experiment was FINISHED")
         
 class OnlineNode2Vec(Node2VecBase):
-    def __init__(self, updater, learner, is_decayed=False, logging=False):
+    def __init__(self, updater, learner, is_decayed=True, logging=False):
         super(OnlineNode2Vec, self).__init__(updater, learner, is_decayed, logging)
         
     def __str__(self):
@@ -150,3 +153,4 @@ class OnlineNode2Vec(Node2VecBase):
         # export embedding
         self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
         print("Experiment was FINISHED")
+                               

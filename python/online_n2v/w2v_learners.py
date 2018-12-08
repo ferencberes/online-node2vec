@@ -2,6 +2,7 @@ from gensim.models import Word2Vec
 from .npw2v import NPWord2Vec
 import pandas as pd
 import numpy as np
+from collections import Counter, deque
 
 class Word2VecBase():
     def __init__(self):
@@ -37,17 +38,20 @@ class Word2VecBase():
             embeddings.to_csv(file_name, index=False, header=False)
 
 class OnlineWord2Vec(Word2VecBase):
-    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, interval=3600, temporal_noise=False):
+    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, loss="logsigmoid", interval=3600, temporal_noise=False, window=3, use_pairs=True):
         """Wrapper for Online Word2Vec model implemented by Kelen Domokos."""
         self.embedding_dims = embedding_dims
         self.lr_rate = lr_rate
         self.neg_rate = neg_rate
+        self.loss = loss
         self.interval = interval
         self.temporal_noise = temporal_noise
+        self.window = window
+        self.use_pairs = use_pairs
         super(OnlineWord2Vec, self).__init__()
 
     def __str__(self):
-        return "onlinew2v_dim%i_lr%0.4f_neg%i_i%i_tn%s" % (self.embedding_dims, self.lr_rate, self.neg_rate, self.interval, self.temporal_noise)
+        return "onlinew2v_dim%i_lr%0.4f_neg%i_%s_i%i_tn%s_win%i_pairs%s" % (self.embedding_dims, self.lr_rate, self.neg_rate, self.loss, self.interval, self.temporal_noise, self.window, self.use_pairs)
         
     def partial_fit(self, sentences, time):
         """Note: learning rate is fixed during online training."""
@@ -56,10 +60,9 @@ class OnlineWord2Vec(Word2VecBase):
             self.appearences = []
             if self.all_words == None:
                 raise RuntimeError("'all_words' must be set before initialization!")
-            self.model =  NPWord2Vec(self.all_words, self.embedding_dims, self.lr_rate, self.neg_rate)
+            self.model = NPWord2Vec(self.embedding_dims, learning_rate=self.lr_rate, negative_rate=self.neg_rate, loss=self.loss, window=self.window, mirror=True)
+            self.model.set_vocabulary(self.all_words)
         #refresh noise
-        for (a, b) in sentences:
-            self.appearences += [a,b]
         time_diff = time - self.last_update
         if time_diff > self.interval:
             print("Updating noise with %i records" % len(self.appearences))
@@ -68,15 +71,23 @@ class OnlineWord2Vec(Word2VecBase):
             if self.temporal_noise:
                 self.appearences = []
         # update model
-        self.model.train_pairs(sentences)
+        if self.use_pairs:
+            # sentences are node pairs
+            for (a, b) in sentences:
+                self.appearences += [a,b]
+            self.model.train_pairs(sentences)
+        else:
+            # sentences are node sequences
+            for sentence in sentences:
+                self.appearences += sentence
+                self.model.train_sentence(sentence)
+
         
-    def get_rank(self, src, trg, top_k):
+    def get_rank(self, src, trg, top_k, ids):
         if self.model == None:
             return None
         else:
-            src_idx = self.model.vocab_code_map[src]
-            trg_idx = self.model.vocab_code_map[trg]
-            return self.model.get_rank(src_idx, trg_idx, top_k)
+            return self.model.get_rank(src, trg, top_k, ids)
 
     def get_embeddings(self):
         W, vocab_code_map  = self.model.get_embed()
@@ -94,6 +105,7 @@ class GensimWord2Vec(Word2VecBase):
         self.neg_rate = neg_rate
         self.n_threads = n_threads
         self.num_epochs = 1
+        # link prediction variables
         self.closest_ids = {}
         self.embeddings = None
         super(GensimWord2Vec, self).__init__()
@@ -149,4 +161,4 @@ class GensimWord2Vec(Word2VecBase):
         vectors = self.model.wv.vectors
         embeddings = pd.DataFrame(vectors).reset_index()
         embeddings['index'] = self.model.wv.index2word
-        return embeddings     
+        return embeddings
