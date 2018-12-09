@@ -151,42 +151,6 @@ class NPWord2Vec:
         else:
             return return_rank
     
-    """
-    def get_rank(self, s1, s2, top_k, ids):
-        if top_k == None: return None
-        ss1, ss2 = self.code_pair(s1,s2)
-        if self.seen.has_edge(ss1,ss2) or self.seen.has_edge(ss2,ss1) or (ss1 not in self.seen.nodes()) or (ss2 not in self.seen.nodes()): return None
-        p , q = self.W1[ss1], self.W2[ss2]
-        r = p.dot(q)
-        if(np.isnan(r)):
-            raise Exception("NAN encountered")
-        rank = 0
-        equal = 0
-        ids = [i for i in set(self.seen.nodes()) - set(self.seen.neighbors(ss1)) - set(self.seen.predecessors(ss1)) if not i in [ss1, ss2]]
-        #id_chunks = np.array_split(list(ids), 12)
-        #for ss3s in id_chunks:
-        #    if(len(ss3s)==0): continue
-        #    qq = self.W2[ss3s]
-        #    sc = qq.dot(p)
-        #    rank += np.sum(~(sc <= r))
-        #    equal += np.sum(sc == r)
-        #    if(rank>=top_k): return None
-        for ss3 in ids:
-            qq = self.W2[ss3]
-            sc = qq.dot(p)
-            if sc <= r:
-                rank += 1
-                if sc == r:
-                    equal += 1
-        if(equal != 0):
-            return_rank = rank+1+np.random.randint(0,equal)
-        else:
-            return_rank = rank+1
-        if(return_rank > top_k):
-            return None
-        else:
-            return return_rank
-    """
     def add(self,s1,s2):
         ss1, ss2  = self.code_pair(s1,s2)
         self.seen.add_edge(ss1,ss2)
