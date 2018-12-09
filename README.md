@@ -3,7 +3,7 @@
 
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n), Dávid Szabó and András A. Benczúr.
 
-## Cite
+# Cite
 
 I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
 
