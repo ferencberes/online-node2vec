@@ -5,7 +5,7 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
+I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. The PDF slides are available on this [link](docs/node_embeddings_in_dynamic_graphs.pdf). Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
 
 ```
 @conference{beres18on2v,
@@ -18,14 +18,12 @@ I am going to present our work at the 7th International Conference on Complex Ne
 
 # Data
 
-The **US Open 2017 (UO17)** and **Roland-Garros 2017 (RG17)** Twitter datasets are available on the [website](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets) of our research group.
-
-You can also download all related data sets with the following command
+The **US Open 2017 (UO17)** and **Roland-Garros 2017 (RG17)** Twitter datasets are available on the [website](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets) of our research group or you can also download it with the following command
 ```bash
 bash ./scripts/download_data.sh
 ```
 
-Please cite our previous [work](https://link.springer.com/article/10.1007/s41109-018-0080-5) ff you use these Twitter datasets. 
+These Twitter datasets were published in our [previous work](https://link.springer.com/article/10.1007/s41109-018-0080-5) for the first time.
 
 # Requirements
 
@@ -46,4 +44,4 @@ Please cite our previous [work](https://link.springer.com/article/10.1007/s41109
 After you have downloaded the UO17 and RG17 datasets you can run our online graph embedding algorithms with the following [scripts](scripts/):
 
    * **Temporal Walk algorithm:** scripts/temp_walk_online_n2v_runner.py
-   * **Temporal Neighbourhood algorithm:** scripts/second_order_sim_online_n2v_runner.py
+   * **Temporal Neighborhood algorithm:** scripts/second_order_sim_online_n2v_runner.py
