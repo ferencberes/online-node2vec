@@ -5,7 +5,7 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. The PDF slides are available on this [link](docs/node_embeddings_in_dynamic_graphs.pdf). Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
+I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](docs/node_embeddings_in_dynamic_graphs_abstract.pdf) are also available in this repository. Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
 
 ```
 @conference{beres18on2v,
