@@ -5,14 +5,16 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-I am going to present our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](docs/node_embeddings_in_dynamic_graphs_abstract.pdf) are also available in this repository. Please cite our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
+I presented our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](docs/node_embeddings_in_dynamic_graphs_abstract.pdf) are also available in this repository. Please [cite](https://drive.google.com/file/d/1MJW9uuOPjclV0yA9OeKPIsHpj88DX8Mq/view) our work if you use this code or our [Twitter datasets](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets):
 
 ```
 @conference{beres18on2v,
   author       = {Ferenc Béres, Róbert Pálovics, Domokos M. Kelen, Dávid Szabó and András A. Benczúr}, 
   title        = {Node Embeddings in Dynamic Graphs},
   booktitle    = {Book of Abstracts of the 7th International Conference on Complex Networks and Their Applications},
+  pages        = {165--167},
   year         = {2018},
+  isbn         = {978-2-9557050-2-5},
 }
 ```
 
