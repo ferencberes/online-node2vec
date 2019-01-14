@@ -5,7 +5,7 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-I presented our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](docs/node_embeddings_in_dynamic_graphs_abstract.pdf) are also available in this repository. Please [cite](https://drive.google.com/file/d/1MJW9uuOPjclV0yA9OeKPIsHpj88DX8Mq/view) our work if you use this code:
+I presented our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](https://www.researchgate.net/publication/330105776_Node_Embeddings_in_Dynamic_Graphs) are also available in this repository. Please [cite](https://drive.google.com/file/d/1MJW9uuOPjclV0yA9OeKPIsHpj88DX8Mq/view) our work if you use this code:
 
 ```
 @conference{beres18on2v,
