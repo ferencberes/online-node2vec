@@ -5,11 +5,10 @@ from .w2v_learners import OnlineWord2Vec
 from .walk_sampling import *
 
 class Node2VecBase():
-    def __init__(self, updater, learner, is_decayed, logging):
+    def __init__(self, updater, learner, is_decayed):
         self.updater = updater
         self.learner = learner
         self.is_decayed = is_decayed
-        self.logging = logging
         self.node_last_update = {}
         print("Model was INITIALIZED: %s" % str(self))
         
@@ -52,11 +51,6 @@ class Node2VecBase():
                 self.learner.export_embeddings(file_name, nbunch=activated_nodes, decay_information=decay_info)
             else:
                 self.learner.export_embeddings(file_name, nbunch=activated_nodes, decay_information=None)
-            if self.logging:
-                if len(self.updater.extended_chosen_list) > 0:
-                    extended_df = pd.DataFrame(self.updater.extended_chosen_list)[["edge_t", "edge_src", "edge_trg", "method", "sample_x", "sample_y"]]
-                    extended_df.to_csv("%s/extended_chosen_df_%i.csv" % (model_out_dir, snapshot_idx), index=False)
-                    self.updater.extended_chosen_list = []
         else:
             print("'output_dir' was not specified. Embedding was not exported!")
         if "TemporalWalk" in str(type(self.updater)):
@@ -65,8 +59,8 @@ class Node2VecBase():
             print(snapshot_idx, elapsed_seconds, self.sum_train_time)
         
 class LazyNode2Vec(Node2VecBase):
-    def __init__(self, updater, learner, is_decayed=True, logging=False):
-        super(LazyNode2Vec, self).__init__(updater, learner, is_decayed, logging)
+    def __init__(self, updater, learner, is_decayed=False):
+        super(LazyNode2Vec, self).__init__(updater, learner, is_decayed)
         
     def __str__(self):
         return "lazy_decayed%s-%s-%s" % (self.is_decayed, self.updater, self.learner)
@@ -113,8 +107,8 @@ class LazyNode2Vec(Node2VecBase):
         print("Experiment was FINISHED")
         
 class OnlineNode2Vec(Node2VecBase):
-    def __init__(self, updater, learner, is_decayed=True, logging=False):
-        super(OnlineNode2Vec, self).__init__(updater, learner, is_decayed, logging)
+    def __init__(self, updater, learner, is_decayed=False):
+        super(OnlineNode2Vec, self).__init__(updater, learner, is_decayed)
         
     def __str__(self):
         return "online_decayed%s-%s-%s" % (self.is_decayed, self.updater, self.learner)
@@ -150,7 +144,8 @@ class OnlineNode2Vec(Node2VecBase):
             # update & sample node pairs for model training
             new_pairs = self.updater.process_new_edge(source, target, current_time)
             self.online_train_model(new_pairs, current_time)
+            # update seen graph for npw2v model
+            self.learner.add_edge(source, target, current_time)
         # export embedding
         self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
         print("Experiment was FINISHED")
-                               

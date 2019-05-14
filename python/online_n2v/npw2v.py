@@ -9,18 +9,21 @@ class NPWord2Vec:
         embedding_dim,
         learning_rate=0.05,
         negative_rate = 5,
+        uniform_ratio = 1.0,
         ns_exponent=0.75,
         loss="logsigmoid",
         mirror=False,
         onlymirror=False,
         init='gensim',
         log_updates=False,
-        window=10
+        window=10,
+        exportW1=True
     ):
         #params
         self.embedding_dim = embedding_dim
         self.learning_rate = learning_rate
         self.negative_rate = negative_rate
+        self.uniform_ratio = uniform_ratio
         self.ns_exponent = ns_exponent
         self.loss = loss 
         self.mirror = mirror
@@ -28,11 +31,13 @@ class NPWord2Vec:
         self.init = init
         self.log_updates = log_updates
         self.window = window
+        self.exportW1 = exportW1
 
         #etc
         self.neg_ref = np.zeros(negative_rate+1)
         self.neg_ref[0] = 1
         self.seen = nx.DiGraph()
+        self.sampled = nx.DiGraph()
 
         if(self.log_updates):
             self.update_sizes = []
@@ -74,7 +79,7 @@ class NPWord2Vec:
         mirror = mirror if mirror is not None else self.mirror
         if(not onlymirror):
             for (s1,s2) in pairs:
-               self.train_pair(s1,s2,learning_rate,negative_rate)
+                self.train_pair(s1,s2,learning_rate,negative_rate)
         if(mirror):
             for (s2,s1) in pairs:
                 self.train_pair(s1,s2,learning_rate,negative_rate)
@@ -91,11 +96,11 @@ class NPWord2Vec:
             neg_ref[0] = 1
         else:
             neg_ref = self.neg_ref
-
+        
         ss1 , ss2 = self.code_pair(s1,s2)
-
-        negs = self.get_negs(nr, [ss2])
+        negs = self.get_negs(ss1, nr, [ss2], self.uniform_ratio)
         samples = [ss2]+negs
+        self.sampled.add_edge(ss1,ss2)
 
         if(self.loss == "logsigmoid"):
             self.do_update_logsigmoid(ss1, samples, neg_ref, lr)
@@ -154,6 +159,9 @@ class NPWord2Vec:
     def add(self,s1,s2):
         ss1, ss2  = self.code_pair(s1,s2)
         self.seen.add_edge(ss1,ss2)
+        available_codes = self.seen.nodes()
+        counts = self.noise_dist_counts[available_codes]**self.ns_exponent
+        self.available_noise_weights = counts/np.sum(counts)
 
     def code_pair(self,s1,s2):
         ss1 = self.vocab_code_map[s1]
@@ -161,22 +169,55 @@ class NPWord2Vec:
         return ss1,ss2
 
     def get_embed(self):
-        return self.W1, self.vocab_code_map
+        if self.exportW1:
+            return self.W1, self.vocab_code_map
+        else:
+            return self.W2, self.vocab_code_map
 
     def write_embed(self, file):
         reverse_map = {v:k for k,v in self.vocab_code_map.items()}
-        out = pd.DataFrame(self.W1).reset_index()
+        if self.exportW1:
+            out = pd.DataFrame(self.W1).reset_index()
+        else:
+            out = pd.DataFrame(self.W2).reset_index()
         out['index'] = out['index'].map(reverse_map)
         out.to_csv(file, sep=' ', header=False, index=False)
     
-    def get_negs(self, num, exclude):
-        r = [v for v in np.random.choice(self.vocab_codes, num+len(exclude)+5, p=self.noise_dist_weights) if v not in exclude][:num]
+    def get_negs(self, src_code, num, exclude, uniform_ratio):
+        sampled_negs = self.get_sampled_negs(src_code, num - int(num*uniform_ratio), exclude)
+        uniform_negs = self.get_uniform_negs(num - len(sampled_negs), exclude)
+        negs = list(np.concatenate((sampled_negs, uniform_negs), axis=None).astype(int))
+        #print(sampled_negs)
+        #print(uniform_negs)
+        #print(negs)
+        return negs
+    
+    def get_sampled_negs(self, src_code, num, exclude):
+        target_codes = []
+        if num > 0 and src_code in self.sampled.nodes():
+            target_codes = set(self.sampled.neighbors(src_code))
+            target_codes = list(target_codes-set(exclude))
+        if len(target_codes) == 0:
+            return np.array([])
+        else:
+            return np.random.choice(target_codes, num)
+    
+    def get_uniform_negs(self, num, exclude):
+        # filter for already seen nodes
+        available_codes = self.seen.nodes()
+        if len(available_codes) == 0:
+            available_codes = self.vocab_codes
+            noise_weights = self.noise_dist_weights
+        else:
+            noise_weights = self.available_noise_weights
+        # uniform random sampling
+        r = [v for v in np.random.choice(available_codes, num+len(exclude)+5, p=noise_weights) if v not in exclude][:num]
         while(len(r) < num):
-            nr = np.random.choice(self.vocab_codes, 1, p=self.noise_dist_weights)[0]
+            nr = np.random.choice(available_codes, 1, p=noise_weights)[0]
             if(nr not in exclude):
                 r.append(nr)
         return r
-
+    
     def update_noise_dist(self, appearences):
         if(appearences is not None):
             vocab_code_list = [self.vocab_code_map[v] for v in appearences]

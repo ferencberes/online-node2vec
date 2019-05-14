@@ -38,12 +38,17 @@ class Word2VecBase():
             embeddings.to_csv(file_name, index=False, header=False)
 
 class OnlineWord2Vec(Word2VecBase):
-    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, loss="logsigmoid", interval=3600, temporal_noise=False, window=3, use_pairs=True):
-        """Wrapper for Online Word2Vec model implemented by Kelen Domokos."""
+    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, loss="logsigmoid", mirror=True, onlymirror=False, init="gensim", exportW1=True, interval=3600, temporal_noise=False, window=3, use_pairs=True, uniform_ratio=1.0):
+        """Custom online Word2Vec model wrapper"""
         self.embedding_dims = embedding_dims
         self.lr_rate = lr_rate
         self.neg_rate = neg_rate
+        self.uniform_ratio = uniform_ratio
         self.loss = loss
+        self.mirror = mirror
+        self.onlymirror = onlymirror
+        self.init = init
+        self.exportW1 = exportW1
         self.interval = interval
         self.temporal_noise = temporal_noise
         self.window = window
@@ -51,17 +56,20 @@ class OnlineWord2Vec(Word2VecBase):
         super(OnlineWord2Vec, self).__init__()
 
     def __str__(self):
-        return "onlinew2v_dim%i_lr%0.4f_neg%i_%s_i%i_tn%s_win%i_pairs%s" % (self.embedding_dims, self.lr_rate, self.neg_rate, self.loss, self.interval, self.temporal_noise, self.window, self.use_pairs)
+        return "onlinew2v_dim%i_lr%0.4f_neg%i_uratio%.2f_%s_mirror%s_om%s_init%s_expW1%s_i%i_tn%s_win%i_pairs%s" % (self.embedding_dims, self.lr_rate, self.neg_rate, self.uniform_ratio, self.loss, self.mirror, self.onlymirror, self.init, self.exportW1, self.interval, self.temporal_noise, self.window, self.use_pairs)
+        
+    def init_model(self, time):
+        self.last_update = time
+        self.appearences = []
+        if self.all_words == None:
+            raise RuntimeError("'all_words' must be set before initialization!")
+        self.model = NPWord2Vec(self.embedding_dims, learning_rate=self.lr_rate, negative_rate=self.neg_rate, loss=self.loss, window=self.window, mirror=self.mirror, onlymirror=self.onlymirror, init=self.init, uniform_ratio=self.uniform_ratio, exportW1=self.exportW1)
+        self.model.set_vocabulary(self.all_words)
         
     def partial_fit(self, sentences, time):
         """Note: learning rate is fixed during online training."""
         if self.model == None:
-            self.last_update = time
-            self.appearences = []
-            if self.all_words == None:
-                raise RuntimeError("'all_words' must be set before initialization!")
-            self.model = NPWord2Vec(self.embedding_dims, learning_rate=self.lr_rate, negative_rate=self.neg_rate, loss=self.loss, window=self.window, mirror=True)
-            self.model.set_vocabulary(self.all_words)
+            self.init_model(time)
         #refresh noise
         time_diff = time - self.last_update
         if time_diff > self.interval:
@@ -81,13 +89,11 @@ class OnlineWord2Vec(Word2VecBase):
             for sentence in sentences:
                 self.appearences += sentence
                 self.model.train_sentence(sentence)
-
-        
-    def get_rank(self, src, trg, top_k, ids):
+                
+    def add_edge(self, src, trg, time):
         if self.model == None:
-            return None
-        else:
-            return self.model.get_rank(src, trg, top_k, ids)
+            self.init_model(time)
+        self.model.add(src, trg)
 
     def get_embeddings(self):
         W, vocab_code_map  = self.model.get_embed()
@@ -98,30 +104,16 @@ class OnlineWord2Vec(Word2VecBase):
 
 class GensimWord2Vec(Word2VecBase):
     def __init__(self, embedding_dims=128, lr_rate=0.01, sg=1, neg_rate=10, n_threads=4):
-        """Gensim online Word2Vec model wrapper object."""
+        """Gensim online Word2Vec model wrapper"""
         self.embedding_dims = embedding_dims
         self.lr_rate = lr_rate
         self.sg = sg
         self.neg_rate = neg_rate
         self.n_threads = n_threads
         self.num_epochs = 1
-        # link prediction variables
         self.closest_ids = {}
         self.embeddings = None
         super(GensimWord2Vec, self).__init__()
-        
-    def get_rank(self, src, trg, topk):
-        if self.embeddings != None:
-            if src not in self.closest_ids:
-                if src in self.embeddings:
-                    self.get_closest_ids(src, topk)
-                else:
-                    return None
-            if trg in self.closest_ids[src]:
-                rank = self.closest_ids[src].index(trg)
-                # min value should be one
-                return rank + 1
-        return None
     
     def get_closest_ids(self, src, topk):
         src_vec = self.embeddings[src]
@@ -161,4 +153,4 @@ class GensimWord2Vec(Word2VecBase):
         vectors = self.model.wv.vectors
         embeddings = pd.DataFrame(vectors).reset_index()
         embeddings['index'] = self.model.wv.index2word
-        return embeddings
+        return embeddings  
