@@ -2,27 +2,13 @@ import random
 import pandas as pd
 import numpy as np
 from .hash_utils import ModHashGenerator
-    
-def get_num_samples(x, k=3, K=50, c=0.5):
-    """"Transformed sigmoid function"""
-    if k <= 0 or K <= 0:
-        raise RuntimeError("Parameter 'K' and 'k' must be positive!")
-    else:
-        if k == K:
-            return k
-        else:
-            b = k / (K-k)
-            a = b * K
-            return int(np.floor(a / (b + np.exp(-c * x))))
 
 class StreamWalkUpdater():
-    def __init__(self, half_life=7200,  max_len=3, beta=0.2, cutoff=604800, k=4, K=10, gamma=0.5, full_walks = False):
+    def __init__(self, half_life=7200,  max_len=3, beta=0.2, cutoff=604800, k=4, full_walks = False):
         self.c = - np.log(0.5) / half_life
         self.beta = beta
         self.half_life = half_life
         self.k = k
-        self.K = K
-        self.gamma = gamma
         self.cutoff  = cutoff
         self.max_len = max_len
         self.full_walks = full_walks
@@ -35,14 +21,11 @@ class StreamWalkUpdater():
             self.lens[j+1] = 0
         
     def __str__(self):
-        return "streamwalk_hl%i_ml%i_beta%.2f_cutoff%i_k%i_K%i_gamma%0.2f_fullw%s" % (self.half_life, self.max_len, self.beta, self.cutoff, self.k, self.K, self.gamma, self.full_walks)
+        return "streamwalk_hl%i_ml%i_beta%.2f_cutoff%i_k%i_fullw%s" % (self.half_life, self.max_len, self.beta, self.cutoff, self.k, self.full_walks)
 
     def process_new_edge(self, src, trg, time):
         self.update(src, trg, time)
-        # generate node pairs for training
-        snum = get_num_samples(self.cent[trg] - 1, k=self.k, K=self.K, c=self.gamma)
-        #snum = self.sample_num
-        return self.sample_node_pairs(src, trg, time, snum)
+        return self.sample_node_pairs(src, trg, time, self.k)
         
     def sample_node_pairs (self, src, trg, time, sample_num):
         if src not in self.G:
@@ -121,7 +104,7 @@ class StreamWalkUpdater():
         self.G[node] = self.G[node][ii:]
     
 
-class OnlineSecondOrderUpdater():
+class SecondOrderUpdater():
     def __init__(self, half_life=7200, num_hash=20, hash_generator=ModHashGenerator(), in_edges = 0.0, out_edges = 1.0, incr_condition=False):
         # parameters
         self.half_life = half_life
@@ -142,7 +125,7 @@ class OnlineSecondOrderUpdater():
         self.sampled = None
 
     def __str__(self):
-        return "sodirected_hl%i_numh%i_%s_in%.2f_out%.2f_incr%s" % (self.half_life, self.num_hash, str(self.hash_gen), self.in_edges, self.out_edges, self.incr_condition)
+        return "secondorder_hl%i_numh%i_%s_in%.2f_out%.2f_incr%s" % (self.half_life, self.num_hash, str(self.hash_gen), self.in_edges, self.out_edges, self.incr_condition)
 
     def process_new_edge(self, src, trg, now):
         sampled = []
