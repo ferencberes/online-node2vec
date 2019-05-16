@@ -17,7 +17,7 @@ I presented a former version of our work at the 7th International Conference on 
   author       = {Ferenc Béres, Róbert Pálovics, Domokos M. Kelen, Dávid Szabó and András A. Benczúr}, 
   title        = {Node Embeddings in Dynamic Graphs},
   booktitle    = {Book of Abstracts of the 7th International Conference on Complex Networks and Their Applications},
-  pages        = {165--167},
+  pages        = {178--180},
   year         = {2018},
   isbn         = {978-2-9557050-2-5},
 }
