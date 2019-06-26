@@ -1,6 +1,6 @@
 # coding: utf-8
-import concurrent.futures
 import os, sys, time
+import concurrent.futures
 import pandas as pd
 import time
 
@@ -21,7 +21,7 @@ is_decayed = True
 is_online = True
 
 is_fw = False
-max_length = 3
+max_length = 2
 k = 4
 beta = 0.9
 cutoff = 604800
@@ -57,24 +57,23 @@ def generate_embeddings(sample_id):
     return root_dir
 
 if __name__ == "__main__":
-    num_samples = 1#int(sys.argv[1])
+    num_samples = 1
     num_threads = 4
     samples = range(num_samples)
     START = time.time()
     
     # data
     if data_id == "rg17":
-        edge_data = pd.read_csv("../data/rg17_data/raw/rg17_mentions.csv", sep=" ", names=["time","src","trg"])
+        edge_data = pd.read_csv("../data/rg17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
         start_time = 1495922400 # 2017-05-28 0:00 Paris # rg17
         total_days = 15
     elif data_id == "uo17":
-        edge_data = pd.read_csv("../data/uo17_data/raw/uo17_mentions.csv", sep=" ", names=["time","src","trg"])
+        edge_data = pd.read_csv("../data/uo17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
         start_time = 1503892800 # 2017-08-28 0:00 NY # uo17
         total_days = 14
     else:
         raise RuntimeError("Invalid dataset!")
     #total_days = 1
-    total_days = 3
     end_time = start_time + total_days*86400
     
     if len(samples) > 1:

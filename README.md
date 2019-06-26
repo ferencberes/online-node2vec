@@ -3,9 +3,11 @@
 
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and András A. Benczúr.
 
-## UPDATE:
+## Recent UPDATES:
 
-*The implementation of our proposed node embedding algorithms (StreamWalk and second order similarity) have been recently updated (2019-05-14) to match the description in our paper that is currently under review.*
+2019-06-26: *Resources for the similarity search experiment evaluation were added to a new branch called 'eval_local_branch'. In this branch a much richer version of the data is used due to evaluation purposes.* **You can find new instructions in the Data and Requirements sections!**
+
+2019-05-14: *The implementation of our proposed node embedding algorithms (StreamWalk and second order similarity) have been recently updated to match the description in our paper that is currently under review.*
 
 # Cite
 
@@ -44,10 +46,7 @@ issn="2364-8228",
 }
 ```
 
-These Twitter datasets are available on the [website](https://dms.sztaki.hu/hu/letoltes/temporal-katz-centrality-data-sets) of our research group or you can also download it with the following command
-```bash
-bash ./scripts/download_data.sh
-```
+These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fberes/tennis/) of our research group. In order to process the data you must install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package. It will automatically [download and process](scripts/preprocess_data.py) the data sets for you.
 
 # Requirements
 
@@ -58,6 +57,7 @@ bash ./scripts/download_data.sh
    conda create -n YOUR_CONDA_PY3_ENV python=3.5 jupyter
    source activate YOUR_CONDA_PY3_ENV
    ```
+   * **Install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package for downloading and processing the data for evaluation.**
    * Install the following packages with *conda* or *pip*:
       * **data processing:** pandas, numpy
       * **scientific:** scipy, gensim, networkx, gmpy2
@@ -65,7 +65,15 @@ bash ./scripts/download_data.sh
 
 # Usage
 
-After you have downloaded the UO17 and RG17 datasets you can run our online node embedding algorithms with the following scripts:
+After installing every requirement execute the following script to run both node representation learning and evaluation for the similarity search task.
 
-   * [StreamWalk](scripts/streamwalk_runner.py)
-   * [Second order similarity](scripts/second_order_runner.py)
+```bash
+cd scripts
+bash run.sh
+```
+
+The major steps in our pipeline are:
+   * [Download and preprocess](scripts/preprocess_data.py) data
+   * Learning [StreamWalk](scripts/streamwalk_runner.py) representations
+   * Learning [Second order similarity](scripts/second_order_runner.py) representations
+   * [Evaluate](scripts/evaluate.py) node embeddings for the similarity search supervised experiment
