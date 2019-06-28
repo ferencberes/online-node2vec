@@ -5,7 +5,7 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 ## Recent UPDATES:
 
-2019-06-26: *Resources for the similarity search experiment evaluation were added to a new branch called 'eval_local_branch'. In this branch a much richer version of the data is used due to evaluation purposes.* **You can find new instructions in the Data and Requirements sections!**
+2019-06-26: *Resources for the similarity search experiment evaluation were added. The updated code requires a much richer version of the data due to evaluation purposes.* **You can find new instructions in the Data and Requirements sections!**
 
 2019-05-14: *The implementation of our proposed node embedding algorithms (StreamWalk and second order similarity) have been recently updated to match the description in our paper that is currently under review.*
 
