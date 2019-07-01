@@ -10,7 +10,7 @@ if __name__ == "__main__":
             print(handler.summary())
             output_dir = "%s/%s_preprocessed" % (data_dir, data_id)
             handler.export_edges(output_dir)
-            handler.export_relevance_labels(output_dir, binary=True)
+            handler.export_relevance_labels(output_dir, binary=True, only_pos_label=True)
             id_to_account = pd.DataFrame(list(zip(handler.account_to_id.values(),handler.account_to_id.keys())),columns=["id","account"])
             id_to_account.to_csv("%s/id2account.csv" % output_dir, index=False)
     else:
