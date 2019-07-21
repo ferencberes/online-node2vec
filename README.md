@@ -3,12 +3,6 @@
 
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and András A. Benczúr.
 
-## Recent UPDATES:
-
-2019-06-26: *Resources for the similarity search experiment evaluation were added. The updated code requires a much richer version of the data due to evaluation purposes.* **You can find new instructions in the Data and Requirements sections!**
-
-2019-05-14: *The implementation of our proposed node embedding algorithms (StreamWalk and second order similarity) have been recently updated to match the description in our paper that is currently under review.*
-
 # Cite
 
 I presented a former version of our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](https://www.researchgate.net/publication/330105776_Node_Embeddings_in_Dynamic_Graphs) are also available in this repository. Please [cite](https://drive.google.com/file/d/1MJW9uuOPjclV0yA9OeKPIsHpj88DX8Mq/view) our work if you use our work:
