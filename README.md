@@ -5,7 +5,9 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-. Please cite our [paper](https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0169-5) if you use our work:
+We propose two online node embedding models (StreamWalk and second order similarity) for temporally evolving networks. Two nodes are required to be mapped close in the vector space whenever they lie on short paths formed by recent edges in the first model, and whenever the set of their recent neighbors is similar in the second model.
+
+Please cite our [paper](https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0169-5) if you use our work:
 
 ```
 @Article{Béres2019,
