@@ -5,27 +5,31 @@ This repository contains the code related to the research of [Ferenc Béres](htt
 
 # Cite
 
-I presented a former version of our work at the 7th International Conference on Complex Networks and Their Applications. The PDF [slides](docs/node_embeddings_in_dynamic_graphs_slides.pdf) and the submitted [extended abstract](https://www.researchgate.net/publication/330105776_Node_Embeddings_in_Dynamic_Graphs) are also available in this repository. Please [cite](https://drive.google.com/file/d/1MJW9uuOPjclV0yA9OeKPIsHpj88DX8Mq/view) our work if you use our work:
-
+. Please cite our [paper](https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0169-5) if you use our work:
 
 ```
-@conference{beres18_oline_n2v,
-  author       = {Ferenc Béres, Róbert Pálovics, Domokos M. Kelen, Dávid Szabó and András A. Benczúr}, 
-  title        = {Node Embeddings in Dynamic Graphs},
-  booktitle    = {Book of Abstracts of the 7th International Conference on Complex Networks and Their Applications},
-  pages        = {178--180},
-  year         = {2018},
-  isbn         = {978-2-9557050-2-5},
+@Article{Béres2019,
+author="B{\'e}res, Ferenc
+and Kelen, Domokos M.
+and P{\'a}lovics, R{\'o}bert
+and Bencz{\'u}r, Andr{\'a}s A.",
+title="Node embeddings in dynamic graphs",
+journal="Applied Network Science",
+year="2019",
+volume="4",
+number="1",
+pages="64",
 }
 ```
-The former version of our work is availabe on this [branch](https://github.com/ferencberes/online-node2vec/tree/complex_networks_2018).
+
+I presented a former version of our work at the 7th International Conference on Complex Networks and Their Applications that is availabe on this [branch](https://github.com/ferencberes/online-node2vec/tree/complex_networks_2018).
 
 # Data
 
 **US Open 2017 (UO17)** and **Roland-Garros 2017 (RG17)** Twitter datasets were published in our [previous work](https://link.springer.com/article/10.1007/s41109-018-0080-5) for the first time. Please cite this article if you use our data sets in your research:
 
 ```
-@Article{Beres2018,
+@Article{Béres2018,
 author="B{\'e}res, Ferenc
 and P{\'a}lovics, R{\'o}bert
 and Ol{\'a}h, Anna
@@ -36,7 +40,6 @@ year="2018",
 volume="3",
 number="1",
 pages="32",
-issn="2364-8228",
 }
 ```
 
