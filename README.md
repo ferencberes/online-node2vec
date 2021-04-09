@@ -19,8 +19,8 @@ title="Node embeddings in dynamic graphs",
 journal="Applied Network Science",
 year="2019",
 volume="4",
-number="1",
-pages="64",
+number="64",
+pages="25",
 }
 ```
 
@@ -40,8 +40,8 @@ title="Temporal walk based centrality metric for graph streams",
 journal="Applied Network Science",
 year="2018",
 volume="3",
-number="1",
-pages="32",
+number="32",
+pages="26",
 }
 ```
 
