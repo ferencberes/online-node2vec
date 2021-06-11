@@ -1,7 +1,6 @@
 import random, functools
 import numpy as np
-import gmpy2 #for next prime function
-
+from sympy import nextprime
 
 # primes
 def is_prime(n):
@@ -18,7 +17,7 @@ def modulo_hash(p,x):
     return x%p
 
 def map_hash(a, b, n, x):
-    return (a*x + b) % gmpy2.next_prime(n)
+    return (a*x + b) % nextprime(n)
 
 def multiply_hash(alpha, b, x):
     if alpha >= 1:

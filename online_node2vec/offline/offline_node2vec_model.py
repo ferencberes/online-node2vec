@@ -1,12 +1,10 @@
-import os, sys, time
+import os, time
 import pandas as pd
 import numpy as np
 import networkx as nx
 from gensim.models import Word2Vec
 from .node2vec import Graph
-
-sys.path.insert(0,"../")
-from online_n2v.online_node2vec_models import Node2VecBase
+from online_node2vec.online.online_node2vec_models import Node2VecBase
 
 class BatchNode2Vec(Node2VecBase):
     def __init__(self, dimensions=128, walk_length=5, num_walks=10, window_size=3, p=1.0, q=1.0, lookback_time=12*3600, directed=True, num_iters=1, n_threads=4):

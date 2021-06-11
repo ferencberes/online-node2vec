@@ -1,5 +1,5 @@
-﻿Online Node2Vec
-========================
+Online Node2Vec
+===============
 
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and András A. Benczúr.
 
@@ -45,22 +45,13 @@ pages="26",
 }
 ```
 
-These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fberes/tennis/) of our research group. In order to process the data you must install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package. It will automatically [download and process](scripts/preprocess_data.py) the data sets for you.
+These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fberes/tennis/) of our research group. In order to process the data you need to install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package. It will automatically [download and process](scripts/preprocess_data.py) the data sets for you.
 
-# Requirements
+# Install
 
-   * UNIX environment
-   * **Python 3.5** conda environment with pre-installed jupyter:
-
-   ```bash
-   conda create -n YOUR_CONDA_PY3_ENV python=3.5 jupyter
-   source activate YOUR_CONDA_PY3_ENV
-   ```
-   * **Install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package for downloading and processing the data for evaluation.**
-   * Install the following packages with *conda* or *pip*:
-      * **data processing:** pandas, numpy
-      * **scientific:** scipy, gensim, networkx, gmpy2
-      * **general:** sys, os, time, random, collections
+```bash
+python setup.py install
+```
 
 # Usage
 
