@@ -2,14 +2,10 @@
 import os, sys, time, concurrent.futures
 import pandas as pd
 import numpy as np
-import time
-
-sys.path.insert(0,"../python")
-
-import evaluation.distance_computer as distc
-import evaluation.ndcg_computer as ndcgc
-import data.tennis_handler as th
-import data.n2v_embedding_handler as n2veh
+import online_node2vec.evaluation.distance_computer as distc
+import online_node2vec.evaluation.ndcg_computer as ndcgc
+import online_node2vec.data.tennis_handler as th
+import online_node2vec.data.n2v_embedding_handler as n2veh
 
 output_folder = "../results/"
 delta_time = 3600*6
@@ -40,34 +36,42 @@ def evaluate_embeddings(param_item):
     return mean_ndcg
 
 if __name__ == "__main__":
-    parameters = sys.argv[1]
-    num_samples = 1
-    num_threads = 4
-    samples = range(num_samples)
-    START = time.time()
-    
-    # data
-    if data_id == "rg17":
-        total_days = 15
-    elif data_id == "uo17":
-        total_days = 14
+    if len(sys.argv) >= 4:
+        parameters = sys.argv[1]
+        num_samples = int(sys.argv[2])
+        num_threads = int(sys.argv[3])
+        if len(sys.argv) >= 5:
+            max_days = int(sys.argv[4])
+        else:
+            max_days = None
+        print(num_samples, num_threads, max_days)
+        samples = range(num_samples)
+        START = time.time()
+
+        # data
+        if data_id == "rg17":
+            total_days = 15 if max_days == None else max_days
+        elif data_id == "uo17":
+            total_days = 14 if max_days == None else min(14,max_days)
+        else:
+            raise RuntimeError("Invalid dataset!")
+        root_dirs = ["%s/%s/features_%s/delta_%i" % (output_folder, data_id, sample_id, delta_time) for sample_id in range(num_samples)]
+        eval_window = delta_time
+
+        # load data
+        gen_id_to_account, player_labels = th.get_data_info("../data/%s_preprocessed" % data_id)
+
+        param_items = list(zip(samples, root_dirs))
+        executor = concurrent.futures.ProcessPoolExecutor(num_threads)
+        metrics = list(executor.map(evaluate_embeddings, param_items))
+
+        print()
+        print(parameters)
+        print("### ELAPSED TIME ###")
+        print("%.2f minutes" % ((time.time()-START) / 60))
+        print("### METRICS ###")
+        print(metrics)
+        print("### PERFORMANCE STATS ###")
+        print(list(zip(['mean','std','min','max'],[np.mean(metrics), np.std(metrics), np.min(metrics), np.max(metrics)])))
     else:
-        raise RuntimeError("Invalid dataset!")
-    root_dirs = ["%s/%s/features_%s/delta_%i" % (output_folder, data_id, sample_id, delta_time) for sample_id in range(num_samples)]
-    eval_window = delta_time
-
-    # load data
-    gen_id_to_account, player_labels = th.get_data_info("../data/%s_preprocessed" % data_id)
-
-    param_items = list(zip(samples, root_dirs))
-    executor = concurrent.futures.ProcessPoolExecutor(num_threads)
-    metrics = list(executor.map(evaluate_embeddings, param_items))
-
-    print()
-    print(parameters)
-    print("### ELAPSED TIME ###")
-    print("%.2f minutes" % ((time.time()-START) / 60))
-    print("### METRICS ###")
-    print(metrics)
-    print("### PERFORMANCE STATS ###")
-    print(list(zip(['mean','std','min','max'],[np.mean(metrics), np.std(metrics), np.min(metrics), np.max(metrics)])))
+        print("Usage: <num_samples> <max_threads> <max_days?>")

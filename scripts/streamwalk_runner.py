@@ -2,14 +2,10 @@
 import os, sys, time
 import concurrent.futures
 import pandas as pd
-import time
-
-sys.path.insert(0,"../python")
-
-from online_n2v.w2v_learners import GensimWord2Vec, OnlineWord2Vec
-from online_n2v.walk_sampling import StreamWalkUpdater
-from online_n2v.online_node2vec_models import LazyNode2Vec, OnlineNode2Vec
-from online_n2v import hash_utils as hu
+from online_node2vec.online.w2v_learners import GensimWord2Vec, OnlineWord2Vec
+from online_node2vec.online.walk_sampling import StreamWalkUpdater
+from online_node2vec.online.online_node2vec_models import LazyNode2Vec, OnlineNode2Vec
+from online_node2vec.online import hash_utils as hu
 
 output_folder = "../results/"
 delta_time = 3600*6
@@ -57,28 +53,35 @@ def generate_embeddings(sample_id):
     return root_dir
 
 if __name__ == "__main__":
-    num_samples = 1
-    num_threads = 4
-    samples = range(num_samples)
-    START = time.time()
-    
-    # data
-    if data_id == "rg17":
-        edge_data = pd.read_csv("../data/rg17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
-        start_time = 1495922400 # 2017-05-28 0:00 Paris # rg17
-        total_days = 15
-    elif data_id == "uo17":
-        edge_data = pd.read_csv("../data/uo17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
-        start_time = 1503892800 # 2017-08-28 0:00 NY # uo17
-        total_days = 14
+    if len(sys.argv) >= 3:
+        num_samples = int(sys.argv[1])
+        num_threads = int(sys.argv[2])
+        if len(sys.argv) >= 4:
+            max_days = int(sys.argv[3])
+        else:
+            max_days = None
+        print(num_samples, num_threads, max_days)
+        samples = range(num_samples)
+        START = time.time()
+
+        # data
+        if data_id == "rg17":
+            edge_data = pd.read_csv("../data/rg17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
+            start_time = 1495922400 # 2017-05-28 0:00 Paris # rg17
+            total_days = 15 if max_days == None else max_days
+        elif data_id == "uo17":
+            edge_data = pd.read_csv("../data/uo17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
+            start_time = 1503892800 # 2017-08-28 0:00 NY # uo17
+            total_days = 14 if max_days == None else min(14,max_days)
+        else:
+            raise RuntimeError("Invalid dataset!")
+        end_time = start_time + total_days*86400
+
+        if len(samples) > 1:
+            executor = concurrent.futures.ProcessPoolExecutor(num_threads)
+            root_dirs = list(executor.map(generate_embeddings, samples))
+        else:
+            root_dirs = list(map(generate_embeddings, samples))
+        print("compute done")
     else:
-        raise RuntimeError("Invalid dataset!")
-    #total_days = 1
-    end_time = start_time + total_days*86400
-    
-    if len(samples) > 1:
-        executor = concurrent.futures.ProcessPoolExecutor(num_threads)
-        root_dirs = list(executor.map(generate_embeddings, samples))
-    else:
-        root_dirs = list(map(generate_embeddings, samples))
-    print("compute done")
+        print("Usage: <num_samples> <max_threads> <max_days?>")
