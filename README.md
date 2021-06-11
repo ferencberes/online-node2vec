@@ -1,6 +1,10 @@
 Online Node2Vec
 ===============
 
+![build](https://github.com/ferencberes/online-node2vec/actions/workflows/main.yml/badge.svg)
+[![codecov](https://codecov.io/gh/ferencberes/online-node2vec/branch/master/graph/badge.svg?token=H6RRUKXQRF)](https://codecov.io/gh/ferencberes/online-node2vec)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django)
+
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and András A. Benczúr.
 
 # Cite

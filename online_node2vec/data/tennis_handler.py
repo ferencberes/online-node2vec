@@ -1,5 +1,16 @@
 import pandas as pd
 import json
+import twittertennis.handler as tt
+
+def download_data_set(data_dir, data_id):
+    handler = tt.TennisDataHandler(data_dir, data_id, include_qualifiers=True)
+    print(handler.summary())
+    output_dir = "%s/%s_preprocessed" % (data_dir, data_id)
+    handler.export_edges(output_dir)
+    handler.export_relevance_labels(output_dir, binary=True, only_pos_label=True)
+    id_to_account = pd.DataFrame(list(zip(handler.account_to_id.values(), handler.account_to_id.keys())), columns=["id","account"])
+    id_to_account.to_csv("%s/id2account.csv" % output_dir, index=False)
+    return output_dir
 
 def get_data_info(data_folder):
     if "rg17" in data_folder:
