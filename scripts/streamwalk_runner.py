@@ -6,7 +6,9 @@ from online_node2vec.online.w2v_learners import GensimWord2Vec, OnlineWord2Vec
 from online_node2vec.online.walk_sampling import StreamWalkUpdater
 from online_node2vec.online.online_node2vec_models import LazyNode2Vec, OnlineNode2Vec
 from online_node2vec.online import hash_utils as hu
+from online_node2vec.data.tennis_handler import load_edge_data
 
+data_dir = "../data/"
 output_folder = "../results/"
 delta_time = 3600*6
 
@@ -63,20 +65,7 @@ if __name__ == "__main__":
         print(num_samples, num_threads, max_days)
         samples = range(num_samples)
         START = time.time()
-
-        # data
-        if data_id == "rg17":
-            edge_data = pd.read_csv("../data/rg17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
-            start_time = 1495922400 # 2017-05-28 0:00 Paris # rg17
-            total_days = 15 if max_days == None else max_days
-        elif data_id == "uo17":
-            edge_data = pd.read_csv("../data/uo17_preprocessed/edges.csv", sep="|", names=["time","src","trg"])
-            start_time = 1503892800 # 2017-08-28 0:00 NY # uo17
-            total_days = 14 if max_days == None else min(14,max_days)
-        else:
-            raise RuntimeError("Invalid dataset!")
-        end_time = start_time + total_days*86400
-
+        edge_data, start_time, end_time = load_edge_data(data_dir, data_id, max_days)
         if len(samples) > 1:
             executor = concurrent.futures.ProcessPoolExecutor(num_threads)
             root_dirs = list(executor.map(generate_embeddings, samples))
