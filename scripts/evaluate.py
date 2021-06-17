@@ -2,7 +2,6 @@
 import os, sys, time, concurrent.futures
 import pandas as pd
 import numpy as np
-import online_node2vec.evaluation.distance_computer as distc
 import online_node2vec.evaluation.ndcg_computer as ndcgc
 import online_node2vec.data.tennis_handler as th
 import online_node2vec.data.n2v_embedding_handler as n2veh

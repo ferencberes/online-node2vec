@@ -10,6 +10,9 @@ import os, shutil
 dirpath = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(dirpath, "..", "data")
 test_folder = "test_results"
+if os.path.exists(test_folder):
+    shutil.rmtree(test_folder)
+os.makedirs(test_folder)
 
 def test_data_rg17():
     rg17_dir = download_data_set(data_dir, "rg17")
@@ -18,51 +21,62 @@ def test_data_rg17():
     
 def test_lazy_streamwalk_with_onlinew2v():
     is_fw = False
-    edge_data, start_time, end_time = load_edge_data(data_dir, "rg17", 2)
+    data_id = "rg17"
+    delta_time = 6*3600
+    edge_data, start_time, end_time = load_edge_data(data_dir, data_id, 2)
     updater = StreamWalkUpdater(half_life=7200, max_len=2, beta=0.9, cutoff=604800, k=4, full_walks=is_fw)
     learner = OnlineWord2Vec(embedding_dims=128, loss="sigmoid", lr_rate=0.035, neg_rate=10, mirror=False, onlymirror=False, init="uniform", exportW1=False, window=2, interval=86400, temporal_noise=False, use_pairs=(not is_fw))
     online_n2v = LazyNode2Vec(updater, learner, is_decayed=True)
-    if os.path.exists(test_folder):
-        shutil.rmtree(test_folder)
-    os.makedirs(test_folder)
-    online_n2v.run(edge_data, 6*3600, test_folder, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(test_folder, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_sigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
+    root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
+    output_dir = os.path.join(root_dir, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_sigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
     assert len(os.listdir(output_dir)) == 8
     
 def test_online_streamwalk_with_onlinew2v():
     is_fw = False
-    edge_data, start_time, end_time = load_edge_data(data_dir, "rg17", 1)
+    data_id = "rg17"
+    delta_time = 6*3600
+    edge_data, start_time, end_time = load_edge_data(data_dir, data_id, 1)
     updater = StreamWalkUpdater(half_life=7200, max_len=2, beta=0.9, cutoff=604800, k=4, full_walks=is_fw)
     learner = OnlineWord2Vec(embedding_dims=128, loss="sigmoid", lr_rate=0.035, neg_rate=10, mirror=False, onlymirror=False, init="uniform", exportW1=False, window=2, interval=86400, temporal_noise=False, use_pairs=(not is_fw))
     online_n2v = OnlineNode2Vec(updater, learner, is_decayed=True)
-    if os.path.exists(test_folder):
-        shutil.rmtree(test_folder)
-    os.makedirs(test_folder)
-    online_n2v.run(edge_data, 6*3600, test_folder, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(test_folder, "online_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_sigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
+    root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
+    output_dir = os.path.join(root_dir, "online_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_sigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
     assert len(os.listdir(output_dir)) == 4
     
 def test_lazy_streamwalk_with_gensimw2v():
     is_fw = False
-    edge_data, start_time, end_time = load_edge_data(data_dir, "rg17", 1)
+    data_id = "rg17"
+    delta_time = 12*3600
+    edge_data, start_time, end_time = load_edge_data(data_dir, data_id, 1)
     updater = StreamWalkUpdater(half_life=7200, max_len=2, beta=0.9, cutoff=604800, k=4, full_walks=is_fw)
     learner = GensimWord2Vec(embedding_dims=128, lr_rate=0.01, neg_rate=10, n_threads=1)
     online_n2v = LazyNode2Vec(updater, learner, is_decayed=True)
-    if os.path.exists(test_folder):
-        shutil.rmtree(test_folder)
-    os.makedirs(test_folder)
-    online_n2v.run(edge_data, 12*3600, test_folder, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(test_folder, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-gensimw2v_dim128_lr0.0100_neg10_sg1")
+    root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
+    output_dir = os.path.join(root_dir, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-gensimw2v_dim128_lr0.0100_neg10_sg1")
     assert len(os.listdir(output_dir)) == 2
     
 def test_second_order():
-    edge_data, start_time, end_time = load_edge_data(data_dir, "uo17", 1)
+    data_id = "uo17"
+    delta_time = 6*3600
+    edge_data, start_time, end_time = load_edge_data(data_dir, data_id, 1)
     hash_gen = hu.ModHashGenerator()
     updater = SecondOrderUpdater(half_life=43200, num_hash=20, hash_generator=hash_gen, in_edges=0.0, out_edges=1.0, incr_condition=True)
     learner = OnlineWord2Vec(embedding_dims=128, loss="square", lr_rate=0.01, neg_rate=5, window=0, interval=86400, temporal_noise=False, use_pairs=True, uniform_ratio=0.8)
     online_n2v = LazyNode2Vec(updater, learner, True)
-    online_n2v.run(edge_data, 6*3600, test_folder, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(test_folder, "lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue")
+    root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
+    output_dir = os.path.join(root_dir, "lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue")
     assert len(os.listdir(output_dir)) == 4
 
 def test_offline_node2vec():
@@ -82,3 +96,26 @@ def test_mul_hash():
     generators = mulh.generate(2)
     value = 3
     assert generators[0](value) != generators[1](value)
+
+from online_node2vec.data.n2v_embedding_handler import load_n2v_features
+import online_node2vec.evaluation.ndcg_computer as ndcgc
+
+def test_evaluation():
+    data_id = "rg17"
+    delta_time = 6*3600
+    total_days = 2
+    sample_id = 0
+    parameters = "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_sigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue"
+    root_dir_prefix = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, sample_id, delta_time)
+    ndcg_eval_dir = "%s/%s/eval_%i/delta_%i/" % (test_folder, data_id, sample_id, delta_time)
+    ndcg_eval_file = "%s/%s.csv" % (ndcg_eval_dir, parameters)
+    features_dir = "%s/%s/features_%i/delta_%i/%s" % (test_folder, data_id, sample_id, delta_time, parameters)
+    gen_id_to_account, player_labels = get_data_info(os.path.join(data_dir, "%s_preprocessed" % data_id))
+    data = load_n2v_features(features_dir, delta_time, total_days, player_labels, delta_time, sep=",")
+    res_dot = ndcgc.parallel_eval_ndcg(data, gen_id_to_account, "-dot", n_threads=4)  
+    all_df = pd.concat(res_dot)
+    if not os.path.exists(ndcg_eval_dir):
+        os.makedirs(ndcg_eval_dir)
+    all_df.to_csv(ndcg_eval_file)
+    mean_ndcg = all_df["ndcg"].mean()
+    assert 0 <= mean_ndcg and mean_ndcg <= 1.0
