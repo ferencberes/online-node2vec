@@ -25,7 +25,10 @@ class NPWord2Vec:
         self.negative_rate = negative_rate
         self.uniform_ratio = uniform_ratio
         self.ns_exponent = ns_exponent
-        self.loss = loss 
+        if loss in ["logsigmoid","square"]:
+            self.loss = loss
+        else:
+            raise ValueError("Choose loss from these values: ['logsigmoid','square']!")
         self.mirror = mirror
         self.onlymirror = onlymirror
         self.init = init

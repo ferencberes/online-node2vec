@@ -48,7 +48,7 @@ def get_topk_similar(reference_id, data_part, metric, gen_id_to_account, k=10, v
             i += 1
     return rdf
 
-def get_combined_topk_similar(ref_id, alpha, df1, df2, distance_str, gen_id_to_account, k, normalize, verbose):
+def get_combined_topk_similar(ref_id, alpha, df1, df2, distance_str, gen_id_to_account, k, normalize, verbose=False):
     snapshot_idx, feats1, daily_players = df1
     _, feats2, _ = df2
     similar_items = []

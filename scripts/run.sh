@@ -1,6 +1,6 @@
-#!/usr/bin
+#!/bin/bash
 SAMPLES=1
-THREADS=2
+THREADS=1
 MAX_DAYS=1
 #MAX_DAYS=15
 python preprocess_data.py "../data"
