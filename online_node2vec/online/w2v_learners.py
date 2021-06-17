@@ -123,7 +123,6 @@ class GensimWord2Vec(Word2VecBase):
         needed_id_places = np.argsort(vec_dot)[::-1][:topk]
         #ids
         self.closest_ids[src] = list(id_list[needed_id_places])
-        
 
     def __str__(self):
         return "gensimw2v_dim%i_lr%0.4f_neg%i_sg%i" % (self.embedding_dims, self.lr_rate, self.neg_rate, self.sg)
@@ -134,9 +133,9 @@ class GensimWord2Vec(Word2VecBase):
             if self.all_words == None:
                 raise RuntimeError("'all_words' must be set before initialization!")
             if self.neg_rate < 0:
-                self.model = Word2Vec(sentences, min_count=1, size=self.embedding_dims, window=1, alpha=self.lr_rate, min_alpha=self.lr_rate, sg=self.sg, negative=0, hs=1, iter=self.num_epochs, workers=self.n_threads) #hierarchical softmax
+                self.model = Word2Vec(sentences, min_count=1, vector_size=self.embedding_dims, window=1, alpha=self.lr_rate, min_alpha=self.lr_rate, sg=self.sg, negative=0, hs=1, epochs=self.num_epochs, workers=self.n_threads) #hierarchical softmax
             else:
-                self.model = Word2Vec(sentences, min_count=1, size=self.embedding_dims, window=1, alpha=self.lr_rate, min_alpha=self.lr_rate, sg=self.sg, negative=self.neg_rate, iter=self.num_epochs, workers=self.n_threads)
+                self.model = Word2Vec(sentences, min_count=1, vector_size=self.embedding_dims, window=1, alpha=self.lr_rate, min_alpha=self.lr_rate, sg=self.sg, negative=self.neg_rate, epochs=self.num_epochs, workers=self.n_threads)
         # update model
         self.model.build_vocab(sentences, update=True)
         self.model.train(sentences, epochs=self.num_epochs, total_words=len(self.all_words))
@@ -145,12 +144,12 @@ class GensimWord2Vec(Word2VecBase):
     
     def get_embedding_vectors(self):
         vectors = self.model.wv.vectors
-        indices = self.model.wv.index2word
+        indices = self.model.wv.index_to_key
         embeddings = {indices[i]:vectors[i] for i in range(len(indices))}
         return embeddings
 
     def get_embeddings(self):
         vectors = self.model.wv.vectors
         embeddings = pd.DataFrame(vectors).reset_index()
-        embeddings['index'] = self.model.wv.index2word
+        embeddings['index'] = self.model.wv.index_to_key
         return embeddings  
