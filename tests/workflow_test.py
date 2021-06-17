@@ -12,8 +12,9 @@ data_dir = os.path.join(dirpath, "..", "data")
 test_folder = "test_results"
 
 def test_data_rg17():
-    processed_dir = download_data_set(data_dir, "rg17")
-    assert os.path.exists(processed_dir)
+    rg17_dir = download_data_set(data_dir, "rg17")
+    uo17_dir = download_data_set(data_dir, "uo17")
+    assert os.path.exists(rg17_dir) and os.path.exists(uo17_dir)
     
 def test_streamwalk():
     is_fw = False
