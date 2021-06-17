@@ -1,4 +1,5 @@
 from online_node2vec.data.tennis_handler import *
+from online_node2vec.offline.offline_node2vec_model import BatchNode2Vec
 from online_node2vec.online.w2v_learners import OnlineWord2Vec
 from online_node2vec.online.walk_sampling import StreamWalkUpdater
 from online_node2vec.online.online_node2vec_models import LazyNode2Vec
@@ -32,8 +33,14 @@ def test_second_order():
     hash_gen = hu.ModHashGenerator()
     updater = SecondOrderUpdater(half_life=43200, num_hash=20, hash_generator=hash_gen, in_edges=0.0, out_edges=1.0, incr_condition=True)
     learner = OnlineWord2Vec(embedding_dims=128, loss="square", lr_rate=0.01, neg_rate=5, window=0, interval=86400, temporal_noise=False, use_pairs=True, uniform_ratio=0.8)
-    # initialize node2vec object
     online_n2v = LazyNode2Vec(updater, learner, True)
     online_n2v.run(edge_data, 6*3600, test_folder, start_time=start_time, end_time=end_time)
     output_dir = os.path.join(test_folder, "lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue")
     assert len(os.listdir(output_dir)) == 4
+
+def test_offline_node2vec():
+    edge_data, start_time, end_time = load_edge_data(data_dir, "uo17", 1)
+    offline_n2v = BatchNode2Vec(dimensions=128, walk_length=3, num_walks=20, window_size=3, p=1.0, q=1.0, lookback_time=172800, n_threads=1)
+    offline_n2v.run(edge_data, 2*3600, test_folder, start_time=start_time, end_time=end_time)
+    output_dir = os.path.join(test_folder, "offline_wnum20_wlength3_win3_p1.00_q1.00_dim128_lb172800_dirTrue")
+    assert len(os.listdir(output_dir)) == 12

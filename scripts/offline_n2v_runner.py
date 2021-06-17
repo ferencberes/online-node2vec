@@ -1,41 +1,48 @@
-import os, sys
+import os, sys, time
 import pandas as pd
 sys.path.insert(0,"../python")
-from offline_n2v.offline_node2vec_model import BatchNode2Vec
+from online_node2vec.offline.offline_node2vec_model import BatchNode2Vec
+from online_node2vec.data.tennis_handler import load_edge_data
 
-from datawand.parametrization import ParamHelper
-ph = ParamHelper("../", "OfflineN2V", sys.argv)
+output_folder = "../results/"
+data_dir = "../data/"
+data_id = "rg17"
+delta_time = 3600*6
 
-delta_time = ph.get("delta_time")
-lookback_time = ph.get("lookback_time")
-n_threads = ph.get("n_threads")
+lookback_time = 172800
+dim = 128
+window = 3
+num_walks = 20
+walk_length = 3
+p = 1.0
+q = 1.0
+n_threads = 1
 
-# updater parameters
-dim = ph.get("dimension")
-window = ph.get("window")
-num_walks = ph.get("num_walks")
-walk_length = ph.get("walk_length")
-p = ph.get("p")
-q = ph.get("q")
+def generate_embeddings(sample_id):
+    offline_n2v = BatchNode2Vec(dim, walk_length, num_walks, window, p, q, lookback_time, n_threads=n_threads)
+    root_dir = "%s/%s/features_%s/delta_%i" % (output_folder, data_id, sample_id, delta_time)
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+    offline_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
+    return root_dir
 
-offline_n2v = BatchNode2Vec(dim, walk_length, num_walks, window, p, q, lookback_time, n_threads=n_threads)
-
-# data
-data_id = ph.get("data_id")
-if data_id == "rg17":
-    edge_data = pd.read_csv("/mnt/idms/temporalNodeRanking/data/filtered_timeline_data/tsv/rg17/rg17_mentions.csv", sep=" ", names=["time","src","trg"])
-    start_time = 1495922400 # 2017-05-28 0:00 Paris # rg17
-    end_time = start_time + 15*86400 # rg17
-elif data_id == "uo17":
-    edge_data = pd.read_csv("/mnt/idms/temporalNodeRanking/data/filtered_timeline_data/tsv/usopen/usopen_mentions.csv", sep=" ", names=["time","src","trg"])
-    start_time = 1503892800 # 2017-08-28 0:00 NY # uo17
-    end_time = start_time + 14*86400 # uo17
-else:
-    raise RuntimeError("Invalid dataset!")
-
-root_dir = "/mnt/idms/fberes/data/temporalN2V/%s/offline_n2v/features/delta_%i" % (data_id, delta_time)
-if not os.path.exists(root_dir):
-    os.makedirs(root_dir)
-    
-# run experiment
-offline_n2v.run(edge_data, delta_time, root_dir, start_time, end_time)
+if __name__ == "__main__":
+    if len(sys.argv) >= 3:
+        num_samples = int(sys.argv[1])
+        num_threads = int(sys.argv[2])
+        if len(sys.argv) >= 4:
+            max_days = int(sys.argv[3])
+        else:
+            max_days = None
+        print(num_samples, num_threads, max_days)
+        samples = range(num_samples)
+        START = time.time()
+        edge_data, start_time, end_time = load_edge_data(data_dir, data_id, max_days)
+        if len(samples) > 1:
+            executor = concurrent.futures.ProcessPoolExecutor(num_threads)
+            root_dirs = list(executor.map(generate_embeddings, samples))
+        else:
+            root_dirs = list(map(generate_embeddings, samples))
+        print("compute done")
+    else:
+        print("Usage: <num_samples> <max_threads> <max_days?>")

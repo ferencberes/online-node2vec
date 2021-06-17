@@ -8,12 +8,12 @@ from online_node2vec.online.online_node2vec_models import LazyNode2Vec, OnlineNo
 from online_node2vec.online import hash_utils as hu
 from online_node2vec.data.tennis_handler import load_edge_data
 
-data_dir = "../data/"
 output_folder = "../results/"
+data_dir = "../data/"
+data_id = "rg17"
 delta_time = 3600*6
 
 # updater parameters
-data_id = "rg17"
 half_life = 7200
 is_decayed = True
 is_online = True
