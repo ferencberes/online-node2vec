@@ -15,10 +15,10 @@ def metric_for_similarity_f(b, metric="euclidean"):
     else:
         raise RuntimeError("Invalid metric!")
 
-def display(simple_array, num):
-    k = len(simple_array);
-    plt.figure(num);
-    plt.plot(range(k), simple_array);
+#def display(simple_array, num):
+#    k = len(simple_array);
+#    plt.figure(num);
+#    plt.plot(range(k), simple_array);
 
 def get_topk_similar(reference_id, data_part, metric, gen_id_to_account, k=10, verbose=True):
     snapshot_id, feats, relevance_labels = data_part

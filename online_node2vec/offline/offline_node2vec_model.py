@@ -26,6 +26,7 @@ class BatchNode2Vec(Node2VecBase):
     def __str__(self):
         return "offline_wnum%i_wlength%i_win%i_p%.2f_q%.2f_dim%i_lb%i_dir%s" % (self.num_walks, self.walk_length, self.window_size, self.p, self.q, self.dimensions, self.lookback_time, self.directed)
     
+    """
     def get_rank(self, src, trg, top_k, ids):
         if self.embeddings != None:
             p , q = self.embeddings[src], self.embeddings[trg]
@@ -51,6 +52,7 @@ class BatchNode2Vec(Node2VecBase):
             else:
                 return return_rank    
         return None
+    """
     
     def learn_embeddings(self, walks):
         """Learn embeddings by optimizing the Skipgram objective using SGD."""

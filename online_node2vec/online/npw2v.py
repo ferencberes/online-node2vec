@@ -133,6 +133,7 @@ class NPWord2Vec:
         self.W2[samples] += np.outer(gb, in_vec)
         self.W1[ss1] += gb.dot(out_vecs)
     
+    """
     def get_rank(self, s1, s2, top_k, ids):
         ss1, ss2 = self.code_pair(s1,s2)
         p , q = self.W1[ss1], self.W2[ss2]
@@ -158,6 +159,7 @@ class NPWord2Vec:
             return None
         else:
             return return_rank
+    """
     
     def add(self,s1,s2):
         ss1, ss2  = self.code_pair(s1,s2)

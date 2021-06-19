@@ -7,6 +7,7 @@ from online_node2vec.online.online_node2vec_models import LazyNode2Vec, OnlineNo
 from online_node2vec.online import hash_utils as hu
 from online_node2vec.online.walk_sampling import SecondOrderUpdater
 import online_node2vec.evaluation.ndcg_computer as ndcgc
+import online_node2vec.evaluation.distance_computer as distc
 import online_node2vec.data.n2v_embedding_handler as n2veh
 import os, shutil
 
@@ -113,7 +114,7 @@ def test_evaluation():
     features_dir = "%s/%s/features_%i/delta_%i/%s" % (test_folder, data_id, sample_id, delta_time, parameters)
     gen_id_to_account, player_labels = get_data_info(os.path.join(data_dir, "%s_preprocessed" % data_id))
     data = load_n2v_features(features_dir, delta_time, total_days, player_labels, delta_time, sep=",")
-    res_dot = ndcgc.parallel_eval_ndcg(data, gen_id_to_account, "-dot", n_threads=4)  
+    res_dot = ndcgc.parallel_eval_ndcg(data, gen_id_to_account, "-dot", n_threads=2)  
     all_df = pd.concat(res_dot)
     if not os.path.exists(ndcg_eval_dir):
         os.makedirs(ndcg_eval_dir)
@@ -121,8 +122,8 @@ def test_evaluation():
     mean_ndcg = all_df["ndcg"].mean()
     assert 0 <= mean_ndcg and mean_ndcg <= 1.0
 
-def test_combination():
-    max_threads = 1
+def test_eval_combination():
+    max_threads = 2
     data_id = "rg17"
     total_days = 1
     delta_time = 21600
@@ -150,3 +151,27 @@ def test_combination():
     combi_perf = pd.concat(combi_res)["ndcg"].mean()
     print("Combi:", combi_perf)
     assert 0 <= combi_perf and combi_perf <= 1.0
+
+def test_toplist_combination():
+    data_id = "rg17"
+    total_days = 1
+    gen_id_to_account, player_labels = get_data_info("%s/%s_preprocessed" % (data_dir, data_id))
+    delta_time = 21600
+    feature_sets = {}
+    model_dirs = {
+            "so" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue/" % test_folder,
+            "sw" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_square_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue/" % test_folder
+        }
+    feature_sets["so"] = n2veh.load_n2v_features(model_dirs["so"], delta_time, total_days, player_labels, verbose=False)
+    feature_sets["sw"] = n2veh.load_n2v_features(model_dirs["sw"], delta_time, total_days, player_labels, verbose=False)
+    #toplist combination
+    snapshot_idx = 1
+    ref_id = 14571755
+    for metric in ["-dot","euclidean","cosine","1-pearson"]:
+        combi_res = distc.get_combined_topk_similar(ref_id, 0.3, feature_sets["so"][snapshot_idx], feature_sets["sw"][snapshot_idx], metric, gen_id_to_account, k=20, normalize=True, verbose=True)
+        assert len(combi_res) == 20
+    
+    
+    
+    
+    
