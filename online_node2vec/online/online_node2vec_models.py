@@ -57,6 +57,7 @@ class Node2VecBase():
             print(snapshot_idx, elapsed_seconds, self.sum_train_time, self.updater.num_stored_walks)
         else:
             print(snapshot_idx, elapsed_seconds, self.sum_train_time)
+        return model_out_dir
         
 class LazyNode2Vec(Node2VecBase):
     def __init__(self, updater, learner, is_decayed=False):
@@ -103,8 +104,9 @@ class LazyNode2Vec(Node2VecBase):
         # lazy learning
         self.lazy_train_model(current_time)
         # export embedding
-        self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
+        model_out_dir = self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
         print("Experiment was FINISHED")
+        return model_out_dir
         
 class OnlineNode2Vec(Node2VecBase):
     def __init__(self, updater, learner, is_decayed=False):
@@ -147,5 +149,6 @@ class OnlineNode2Vec(Node2VecBase):
             # update seen graph for npw2v model
             self.learner.add_edge(source, target, current_time)
         # export embedding
-        self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
+        model_out_dir = self.export_features(output_dir, snapshot_idx, start_epoch, current_time)
         print("Experiment was FINISHED")
+        return model_out_dir

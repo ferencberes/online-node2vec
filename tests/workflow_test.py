@@ -19,7 +19,9 @@ if os.path.exists(test_folder):
     shutil.rmtree(test_folder)
 os.makedirs(test_folder)
 
-def test_data_rg17():
+def test_data_preparation():
+    if os.path.exists():
+        shutil.rmtree(data_dir)
     rg17_dir = download_data_set(data_dir, "rg17")
     uo17_dir = download_data_set(data_dir, "uo17")
     assert os.path.exists(rg17_dir) and os.path.exists(uo17_dir)
@@ -35,8 +37,7 @@ def test_lazy_streamwalk_with_onlinew2v():
     root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
-    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(root_dir, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_square_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
+    output_dir = online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
     assert len(os.listdir(output_dir)) == 8
     
 def test_online_streamwalk_with_onlinew2v():
@@ -50,8 +51,7 @@ def test_online_streamwalk_with_onlinew2v():
     root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
-    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(root_dir, "online_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_logsigmoid_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue")
+    output_dir = online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
     assert len(os.listdir(output_dir)) == 4
     
 def test_lazy_streamwalk_with_gensimw2v():
@@ -65,8 +65,7 @@ def test_lazy_streamwalk_with_gensimw2v():
     root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
-    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(root_dir, "lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-gensimw2v_dim128_lr0.0100_neg10_sg1")
+    output_dir = online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
     assert len(os.listdir(output_dir)) == 2
     
 def test_second_order():
@@ -80,15 +79,13 @@ def test_second_order():
     root_dir = "%s/%s/features_%s/delta_%i" % (test_folder, data_id, 0, delta_time)
     if not os.path.exists(root_dir):
         os.makedirs(root_dir)
-    online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(root_dir, "lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue")
+    output_dir = online_n2v.run(edge_data, delta_time, root_dir, start_time=start_time, end_time=end_time)
     assert len(os.listdir(output_dir)) == 4
-
+    
 def test_offline_node2vec():
     edge_data, start_time, end_time = load_edge_data(data_dir, "uo17", 1)
     offline_n2v = BatchNode2Vec(dimensions=128, walk_length=3, num_walks=20, window_size=3, p=1.0, q=1.0, lookback_time=172800, n_threads=1)
-    offline_n2v.run(edge_data, 2*3600, test_folder, start_time=start_time, end_time=end_time)
-    output_dir = os.path.join(test_folder, "offline_wnum20_wlength3_win3_p1.00_q1.00_dim128_lb172800_dirTrue")
+    output_dir = offline_n2v.run(edge_data, 2*3600, test_folder, start_time=start_time, end_time=end_time)
     assert len(os.listdir(output_dir)) == 12
 
 def test_map_hash():
@@ -170,8 +167,3 @@ def test_toplist_combination():
     for metric in ["-dot","euclidean","cosine","1-pearson"]:
         combi_res = distc.get_combined_topk_similar(ref_id, 0.3, feature_sets["so"][snapshot_idx], feature_sets["sw"][snapshot_idx], metric, gen_id_to_account, k=20, normalize=True, verbose=True)
         assert len(combi_res) == 20
-    
-    
-    
-    
-    

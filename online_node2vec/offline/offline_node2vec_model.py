@@ -90,6 +90,7 @@ class BatchNode2Vec(Node2VecBase):
         output_name = "%s/embedding_%i.csv" % (experiment_dir, snapshot_idx)
         embeddings.to_csv(output_name, index=False, header=False)
         print(snapshot_idx, elapsed_seconds)
+        return experiment_dir
 
     def run(self, edge_data, snapshot_window, output_dir, start_time, end_time=None):
         """Edges have to be sorted according to time column."""
@@ -108,6 +109,7 @@ class BatchNode2Vec(Node2VecBase):
             if not self.directed:
                 G = G.to_undirected()
             self.train(G)
-            self.export_features(output_dir, idx, start_epoch)
+            model_out_dir = self.export_features(output_dir, idx, start_epoch)
         print("Experiment was FINISHED")
+        return model_out_dir
             

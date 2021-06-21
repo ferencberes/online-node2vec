@@ -5,7 +5,7 @@ Online Node2Vec
 [![codecov](https://codecov.io/gh/ferencberes/online-node2vec/branch/master/graph/badge.svg?token=H6RRUKXQRF)](https://codecov.io/gh/ferencberes/online-node2vec)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django)
 
-This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and András A. Benczúr.
+This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and [András A. Benczúr](https://mi.nemzetilabor.hu/people/andras-benczur).
 
 # Introduction
 
@@ -49,7 +49,7 @@ pages="26",
 }
 ```
 
-These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fberes/tennis/) of our research group. In order to process the data you need to install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package. It will automatically [download and process](scripts/preprocess_data.py) the data sets for you.
+These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fberes/tennis/) of our research group. In order to process the data you need to install the [twittertennis](https://github.com/ferencberes/twittertennis) Python package. It will automatically [download and prepare](scripts/preprocess_data.py) the datasets for you.
 
 # Install
 
