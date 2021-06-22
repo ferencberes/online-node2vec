@@ -8,6 +8,8 @@ install_requires = [
     'scipy',
     'gensim',
     'sympy',
+    'plotly',
+    'tqdm',
     'python-Levenshtein'#submit warnings
 ]
 
