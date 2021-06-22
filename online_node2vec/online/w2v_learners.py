@@ -60,7 +60,7 @@ class OnlineWord2Vec(Word2VecBase):
     init: uniform/gensim
         Choose method for embedding initialization
     exportW1: bool
-        Specify which matrix is exported as representation
+        Select representation matrix
     temporal_noise: bool
         Enable temporal node activity based negative sampling
     interval: int

@@ -8,6 +8,7 @@ install_requires = [
     'scipy',
     'gensim',
     'sympy',
+    'python-Levenshtein'#submit warnings
 ]
 
 setup_requires = ['pytest-runner']

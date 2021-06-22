@@ -11,7 +11,7 @@ class StreamWalkUpdater():
     ----------
     half_life : int
         Half-life in seconds for time decay
-    half_life : int
+    max_len : int
         Maximum length of the sampled temporal random walks
     beta : float
         Damping factor for long paths
