@@ -38,7 +38,41 @@ class Word2VecBase():
             embeddings.to_csv(file_name, index=False, header=False)
 
 class OnlineWord2Vec(Word2VecBase):
-    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, loss="logsigmoid", mirror=True, onlymirror=False, init="gensim", exportW1=True, interval=3600, temporal_noise=False, window=3, use_pairs=True, uniform_ratio=1.0):
+    """
+    Custom Word2Vec wrapper for online representation learning
+    
+    Parameters
+    ----------
+    embedding_dims : int
+        Dimensions of the representation
+    lr_rate : float
+        Learning rate
+    neg_rate: int
+        Negative rate
+    n_threads: int
+        Maximum number of threads for parallelization
+    loss: square/logsigmoid
+        Choose loss type
+    mirror:
+        Feed sampled node pairs in both order to the learner
+    onlymirror:
+        Feed sampled node pairs only in reverse order to the learner
+    init: uniform/gensim
+        Choose method for embedding initialization
+    exportW1: bool
+        Specify which matrix is exported as representation
+    temporal_noise: bool
+        Enable temporal node activity based negative sampling
+    interval: int
+        Synchronization window in seconds in case of temporal noise
+    use_pairs: bool
+        Input is fed as node pairs instead of node sequences
+    window: int
+        Window parameter in case of node sequence input
+    uniform_ratio: float
+        Fraction of uniform random negative samples. Remaining negative samples are chosen from past positive training instances.
+    """
+    def __init__(self, embedding_dims=128, lr_rate=0.01, neg_rate=10, loss="square", mirror=True, onlymirror=False, init="uniform", exportW1=True, interval=86400, temporal_noise=False, window=2, use_pairs=True, uniform_ratio=1.0):
         """Custom online Word2Vec model wrapper"""
         self.embedding_dims = embedding_dims
         self.lr_rate = lr_rate
@@ -103,8 +137,23 @@ class OnlineWord2Vec(Word2VecBase):
         return embeddings
 
 class GensimWord2Vec(Word2VecBase):
+    """
+    gensim.Word2Vec wrapper for online representation learning
+    
+    Parameters
+    ----------
+    embedding_dims : int
+        Dimensions of the representation
+    lr_rate : float
+        Learning rate
+    sg: 0/1
+        Use skip-gram model
+    neg_rate: int
+        Negative rate
+    n_threads: int
+        Maximum number of threads for parallelization
+    """
     def __init__(self, embedding_dims=128, lr_rate=0.01, sg=1, neg_rate=10, n_threads=4):
-        """Gensim online Word2Vec model wrapper"""
         self.embedding_dims = embedding_dims
         self.lr_rate = lr_rate
         self.sg = sg

@@ -4,7 +4,25 @@ import numpy as np
 from .hash_utils import ModHashGenerator
 
 class StreamWalkUpdater():
-    def __init__(self, half_life=7200,  max_len=3, beta=0.2, cutoff=604800, k=4, full_walks = False):
+    """
+    Sample temporal random walks for the StreamWalk algorithm
+    
+    Parameters
+    ----------
+    half_life : int
+        Half-life in seconds for time decay
+    half_life : int
+        Maximum length of the sampled temporal random walks
+    beta : float
+        Damping factor for long paths
+    cutoff: int
+        Temporal cutoff in seconds to exclude very distant past
+    k: int
+        Number of sampled walks for each edge update
+    full_walks: bool
+        Return every node of the sampled walk for representation learning (full_walks=True) or only the endpoints of the walk (full_walks=False)
+    """
+    def __init__(self, half_life=7200,  max_len=3, beta=0.9, cutoff=604800, k=4, full_walks=False):
         self.c = - np.log(0.5) / half_life
         self.beta = beta
         self.half_life = half_life
@@ -105,7 +123,25 @@ class StreamWalkUpdater():
     
 
 class SecondOrderUpdater():
-    def __init__(self, half_life=7200, num_hash=20, hash_generator=ModHashGenerator(), in_edges = 0.0, out_edges = 1.0, incr_condition=False):
+    """
+    Sample node pairs for the online second order similarity algorithm
+    
+    Parameters
+    ----------
+    half_life : int
+        Half-life in seconds for time decay
+    num_hash : int
+        Number of hash functions to use for similarity approximation
+    hash_gen : object
+        Hash function generator class. Choose from the implemented generators in `online_node2vec.online.hash_utils`
+    in_edges: float 
+        Weight of in-neighborhood fingerprint
+    out_edges: float
+        Weight of out-neighborhood fingerprint
+    incr_condition: bool
+        Enable strict fingerprint matching criteria
+    """
+    def __init__(self, half_life=7200, num_hash=20, hash_generator=ModHashGenerator(), in_edges=0.0, out_edges=1.0, incr_condition=True):
         # parameters
         self.half_life = half_life
         self.num_hash = num_hash
@@ -145,7 +181,7 @@ class SecondOrderUpdater():
         "Update fingerprints then sample node pairs for word2vec"
 
         sampled_node_pairs = []
-        # update second order similarities
+        # update second order similarities (update every fingerprints for node v")
         self.heuristic_update(v, u, v, now, fingerprint_data)
         neighbors = edgelist_graph.get(u, set([]))
         for (x,t) in list(neighbors):
@@ -156,14 +192,17 @@ class SecondOrderUpdater():
             else:
                 neighbors.add((x,now))
             if x != v:
+                # update every fingerprints for node x
                 self.heuristic_update(x, u, v, now, fingerprint_data)
                 # sample node pairs for word2vec
                 for i in range(self.num_hash):
                     fp_v = fingerprint_data[v][i][1]
                     fp_x = fingerprint_data[x][i][1]
                     if self.incr_condition:
+                        # fingerprint must be u for both nodes
                         match_condition = fp_v == u and fp_x == u
                     else:
+                        # any common fingerprint value match is valid
                         match_condition = fp_v == fp_x and (fp_v is not None)
                     if match_condition:
                         sampled_node_pairs.append((v, x))  # string casting for word2vec

@@ -60,6 +60,18 @@ class Node2VecBase():
         return model_out_dir
         
 class LazyNode2Vec(Node2VecBase):
+    """
+    Object for running online node embedding algorithms. `LazyNode2Vec` only updates node representations before exporting them for each snapshot. The delayed representation update improves running time compared to the `OnlineNode2Vec` implementation.
+    
+    Parameters
+    ----------
+    updater : object
+        Specify an Updater object that samples node pairs
+    learner : object
+        Specify a Word2Vec object to learn online node representations 
+    is_decayed: bool
+        Apply time decay for the exported node representations. The representation of recently inactive nodes will be close to the origo.
+    """
     def __init__(self, updater, learner, is_decayed=False):
         super(LazyNode2Vec, self).__init__(updater, learner, is_decayed)
         
@@ -78,7 +90,22 @@ class LazyNode2Vec(Node2VecBase):
             self.sampled_pairs = []
 
     def run(self, edge_data, snapshot_window, output_dir, start_time, end_time=None):
-        """Edges have to be sorted according to time column"""
+        """
+        Run online node2vec experiment. Node representation are exported for each snapshot.
+
+        Parameters
+        ----------
+        edge_data : 
+            Edge stream data. Edges have to be sorted according to time column.
+        snapshot_window : int
+            Snapshot length in seconds
+        output_dir: str
+            Folder to export representations. Only the root is needed. Parameters will be appended to a subfolder.
+        start_time: int
+            Starting epoch of the experiment
+        end_time: int
+            Ending epoch of the experiment
+        """
         # filter data
         partial_data = super(LazyNode2Vec, self).filter_edges(edge_data, start_time, end_time)
         start_epoch = int(time.time())
@@ -109,6 +136,18 @@ class LazyNode2Vec(Node2VecBase):
         return model_out_dir
         
 class OnlineNode2Vec(Node2VecBase):
+    """
+    Object for running online node embedding algorithms. `OnlineNode2Vec` updates node representations after every link arrival in the edge stream.
+    
+    Parameters
+    ----------
+    updater : object
+        Specify an Updater object that samples node pairs
+    learner : object
+        Specify a Word2Vec object to learn online node representations 
+    is_decayed: bool
+        Apply time decay for the exported node representations. The representation of recently inactive nodes will be close to the origo.
+    """
     def __init__(self, updater, learner, is_decayed=False):
         super(OnlineNode2Vec, self).__init__(updater, learner, is_decayed)
         
@@ -126,7 +165,22 @@ class OnlineNode2Vec(Node2VecBase):
             self.sum_train_time += (train_time_stop - train_time_start)
 
     def run(self, edge_data, snapshot_window, output_dir, start_time, end_time=None):
-        """Edges have to be sorted according to time column"""
+        """
+        Run online node2vec experiment. Node representation are exported for each snapshot.
+
+        Parameters
+        ----------
+        edge_data : 
+            Edge stream data. Edges have to be sorted according to time column.
+        snapshot_window : int
+            Snapshot length in seconds
+        output_dir: str
+            Folder to export representations. Only the root is needed. Parameters will be appended to a subfolder.
+        start_time: int
+            Starting epoch of the experiment
+        end_time: int
+            Ending epoch of the experiment
+        """
         # filter data
         partial_data = super(OnlineNode2Vec, self).filter_edges(edge_data, start_time, end_time)
         start_epoch = int(time.time())

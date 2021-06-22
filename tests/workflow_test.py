@@ -20,10 +20,10 @@ if os.path.exists(test_folder):
 os.makedirs(test_folder)
 
 def test_data_preparation():
-    if os.path.exists():
+    if os.path.exists(data_dir):
         shutil.rmtree(data_dir)
-    rg17_dir = download_data_set(data_dir, "rg17")
-    uo17_dir = download_data_set(data_dir, "uo17")
+    rg17_dir, _ = download_data_set(data_dir, "rg17")
+    uo17_dir, _ = download_data_set(data_dir, "uo17")
     assert os.path.exists(rg17_dir) and os.path.exists(uo17_dir)
     
 def test_lazy_streamwalk_with_onlinew2v():
@@ -128,7 +128,7 @@ def test_eval_combination():
     gen_id_to_account, player_labels = get_data_info(os.path.join(data_dir, "%s_preprocessed" % data_id))
     ## Load embeddings
     model_dirs = {
-            "so" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue/" % test_folder,
+            "so" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_inituniform_expW1True_i86400_tnFalse_win0_pairsTrue/" % test_folder,
             "sw" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_square_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue/" % test_folder
         }
     feature_sets = {}
@@ -156,7 +156,7 @@ def test_toplist_combination():
     delta_time = 21600
     feature_sets = {}
     model_dirs = {
-            "so" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_initgensim_expW1True_i86400_tnFalse_win0_pairsTrue/" % test_folder,
+            "so" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-secondorder_hl43200_numh20_modhash200000_in0.00_out1.00_incrTrue-onlinew2v_dim128_lr0.0100_neg5_uratio0.80_square_mirrorTrue_omFalse_inituniform_expW1True_i86400_tnFalse_win0_pairsTrue/" % test_folder,
             "sw" : "%s/rg17/features_0/delta_21600/lazy_decayedTrue-streamwalk_hl7200_ml2_beta0.90_cutoff604800_k4_fullwFalse-onlinew2v_dim128_lr0.0350_neg10_uratio1.00_square_mirrorFalse_omFalse_inituniform_expW1False_i86400_tnFalse_win2_pairsTrue/" % test_folder
         }
     feature_sets["so"] = n2veh.load_n2v_features(model_dirs["so"], delta_time, total_days, player_labels, verbose=False)

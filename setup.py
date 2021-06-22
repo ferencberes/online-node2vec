@@ -7,7 +7,7 @@ install_requires = [
     'numpy',
     'scipy',
     'gensim',
-    'sympy'
+    'sympy',
 ]
 
 setup_requires = ['pytest-runner']
