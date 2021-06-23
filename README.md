@@ -54,7 +54,7 @@ These Twitter datasets are available on the [website](https://dms.sztaki.hu/~fbe
 # Install
 
 ```bash
-python setup.py install
+pip install online-node2vec
 ```
 
 # Usage

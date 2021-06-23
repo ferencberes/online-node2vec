@@ -39,7 +39,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='online_node2vec',
-      version='0.1.0',
+      version='0.1.1',
       description='Node Embeddings in Dynamic Graphs',
       url='https://github.com/ferencberes/online-node2vec',
       author='Ferenc Beres',
