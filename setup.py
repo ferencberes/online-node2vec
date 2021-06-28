@@ -5,7 +5,7 @@ install_requires = [
     'networkx',
     'pandas',
     'numpy',
-    'scipy=1.6.3',
+    'scipy',
     'gensim',
     'sympy',
     'plotly',
