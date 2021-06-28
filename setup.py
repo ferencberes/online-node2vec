@@ -10,7 +10,7 @@ install_requires = [
     'sympy',
     'plotly',
     'tqdm',
-    'python-Levenshtein'#submit warnings
+    #'python-Levenshtein'#submit warnings
 ]
 
 setup_requires = ['pytest-runner']
@@ -21,6 +21,7 @@ tests_require = [
     'codecov'
 ]
 
+"""
 keywords = [
     "graph",
     "research",
@@ -31,6 +32,7 @@ keywords = [
     "mention graph",
     "twitter"
 ]
+"""
 
 # read the contents of your README file
 from os import path
@@ -48,7 +50,7 @@ setup(name='online_node2vec',
       install_requires=install_requires,
       setup_requires = setup_requires,
       tests_require = tests_require,
-      keywords = keywords,
+      #keywords = keywords,
       long_description=long_description,
       long_description_content_type='text/markdown',
       python_requires = '>=3.6',
