@@ -59,14 +59,14 @@ class StreamWalkUpdater():
         walk = []
         walk.append(node_)
         while True:
-            if random.uniform(0, 1) < 1 / (cent_ * self.beta + 1) or (node_ not in self.G) or len(walk) >= self.max_len:
+            if random.uniform(0, 1) < 1 / (cent_ + 1) or (node_ not in self.G) or len(walk) >= self.max_len:
                 break
             sum_ = cent_ * random.uniform(0, 1)
             sum__ = 0
             broken = False
             for (n, t, c) in reversed(self.G[node_]):
                 if t < time_:
-                    sum__ += (c * self.beta + 1) * np.exp(self.c * (t - time_))
+                    sum__ += (c + 1) * self.beta * np.exp(self.c * (t - time_))
                     if sum__ >= sum_:
                         broken = True
                         break
@@ -99,11 +99,11 @@ class StreamWalkUpdater():
             else:
                 # if src is currently active then adjust centrality
                 src_cent = src_cent - self.cent_now[src]
-        self.cent[trg] += src_cent * self.beta + 1
+        self.cent[trg] += (src_cent + 1) * self.beta
         if (trg not in self.times) or (self.times[trg] < time):
             # cent_now is initialized for each node in each second
             self.cent_now[trg] = 0
-        self.cent_now[trg] += src_cent * self.beta + 1
+        self.cent_now[trg] += (src_cent + 1) * self.beta
         # collect recent edges for each vertex
         if trg not in self.G:
             self.G[trg] = []
