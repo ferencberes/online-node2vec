@@ -3,7 +3,7 @@ Online Node2Vec
 
 ![build](https://github.com/ferencberes/online-node2vec/actions/workflows/main.yml/badge.svg)
 [![codecov](https://codecov.io/gh/ferencberes/online-node2vec/branch/master/graph/badge.svg?token=H6RRUKXQRF)](https://codecov.io/gh/ferencberes/online-node2vec)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django)
+![PyPI - Python Version](https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8%20|%203.9-blue.svg)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ferencberes/online-node2vec/HEAD?filepath=ipython%2FOnlineNodeEmbeddings.ipynb)
 
 This repository contains the code related to the research of [Ferenc Béres](https://github.com/ferencberes), [Róbert Pálovics](https://github.com/rpalovics), [Domokos Miklós Kelen](https://github.com/proto-n) and [András A. Benczúr](https://mi.nemzetilabor.hu/people/andras-benczur).
